@@ -1,0 +1,90 @@
+body {
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-size: 18px;
+    margin: 20px;
+    padding-bottom: 20px;
+    height: 600px;
+    width: 740px;
+}
+
+.event-time {
+    display: inline-block;
+    width: 90px;
+}
+
+h1 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #002855;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+}
+
+h2 {
+    color: #002855;
+    border-bottom: 1px solid #dadada;
+}
+
+h2 a:link, h2 a:visited, h2 a:active {
+    color: #002855;
+    text-decoration: none;
+}
+
+h2 a:hover {
+    color: #002855;
+    text-decoration: underline;
+}
+
+h3 {
+    color: #535486;
+}
+
+a:link,
+a:visited {
+    color: black;
+    outline: 0;
+    text-decoration: none;
+}
+
+a:focus, a:hover {
+    text-decoration: underline;
+}
+
+.version {
+    color: #444;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+footer {
+    padding: 20px 0;
+}
+
+#loading-message {
+    color: #555;
+    margin-top: 20px;
+}
+
+.modal-header {
+    align-items: center;
+}
+
+.modal-content {
+    padding: 0 22px;
+}
+
+.modal-icons {
+    border-top: 0.5px solid #dadada;
+    height: 50px;
+    width: 100%;
+}
+
+.logo-icon {
+    vertical-align: text-bottom;
+    margin-right: 12px;
+    width: 80px;
+    filter: drop-shadow(2px 2px 2px #3a3a3a);
+    border-radius: 50%;
+}
