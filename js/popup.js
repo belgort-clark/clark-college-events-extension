@@ -130,6 +130,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     console.warn(`Container with ID "${containerId}" not found.`);
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
 
