@@ -4,7 +4,7 @@ body {
     margin: 20px;
     padding-bottom: 20px;
     height: 600px;
-    width: 740px;
+    max-width: 740px;
 }
 
 .event-time {
@@ -69,6 +69,25 @@ footer {
 #loading-message {
     color: #555;
     margin-top: 20px;
+}
+
+#messages {
+    display: none;
+    border: 5px double #fff;
+    padding: 5px 15px 5px 15px;
+    margin: 20px 0;
+    border-radius: 6px;
+    color: #fff;
+    background-color: #002855;
+}
+
+#messages h2 {
+    color: #fff;
+    border: none;
+}
+
+#viewinbrowser {
+    margin: 30px 0 0 0;
 }
 
 .modal-header {

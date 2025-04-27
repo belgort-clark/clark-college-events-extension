@@ -1,3 +1,24 @@
+const messages = document.querySelector("#messages");
+const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";
+
+// check for important messages stored on GitHub repo as JSON
+fetch(messagesUrl)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json(); // Parse JSON data
+  })
+  .then(data => {
+    if (data.message != "") {
+      messages.innerHTML = data.message;
+      messages.style.display = 'block';
+    }
+  })
+  .catch(error => {
+    console.error('There was an error with the fetch operation:', error);
+  });
+
 function renderTodayDate() {
   const now = new Date();
 
@@ -131,6 +152,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   }
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
 
@@ -154,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
       generalData,
       'https://www.clark.edu/about/calendars/events.php'
     );
-    
+
     renderEventSection(
       'training-events',
       'Employee Training and Development Events',
