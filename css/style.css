@@ -109,5 +109,5 @@ footer {
     margin-right: 12px;
     width: 80px;
     filter: drop-shadow(2px 2px 2px #3a3a3a);
-    border-radius: 50%;
+    /* border-radius: 50%; */
 }
