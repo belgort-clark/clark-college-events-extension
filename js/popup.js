@@ -169,7 +169,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
       section.appendChild(ul);
     } else {
       const message = document.createElement("p");
-      message.textContent = 'There are no ' + title.toLowerCase() + '.';
+      message.textContent = 'No events are scheduled at this time.';
       section.appendChild(message);
     }
   }
