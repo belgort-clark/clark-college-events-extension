@@ -27,7 +27,9 @@ h2 {
     border-bottom: 1px solid #dadada;
 }
 
-h2 a:link, h2 a:visited, h2 a:active {
+h2 a:link,
+h2 a:visited,
+h2 a:active {
     color: #002855;
     text-decoration: none;
 }
@@ -48,7 +50,8 @@ a:visited {
     text-decoration: none;
 }
 
-a:focus, a:hover {
+a:focus,
+a:hover {
     text-decoration: underline;
 }
 
@@ -109,5 +112,16 @@ footer {
     margin-right: 12px;
     width: 80px;
     filter: drop-shadow(2px 2px 2px #3a3a3a);
-    /* border-radius: 50%; */
+}
+
+a.event-past {
+    color: #333;
+    opacity: .7;
+}
+
+.event-icon {
+    /* margin-right: 0.4em; */
+    color: #4E87A0;
+    font-size: 0.85em;
+    vertical-align: middle;
 }

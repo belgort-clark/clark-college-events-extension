@@ -1,16 +1,14 @@
+// Show messages from GitHub
 const messages = document.querySelector("#messages");
 const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";
 
-// check for important messages stored on GitHub repo as JSON
 fetch(messagesUrl)
   .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.json(); // Parse JSON data
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    return response.json();
   })
   .then(data => {
-    if (data.message != "") {
+    if (data.message !== "") {
       messages.innerHTML = data.message;
       messages.style.display = 'block';
     }
@@ -19,29 +17,42 @@ fetch(messagesUrl)
     console.error('There was an error with the fetch operation:', error);
   });
 
+// Render today's date
 function renderTodayDate() {
   const now = new Date();
-
-  // const heading = document.createElement("h1");
   const heading = document.querySelector('#event-date');
-  heading.innerHTML = `Clark College Events <br> ${now.toLocaleDateString(undefined, {
+  heading.innerHTML = 'Clark College Events <br><small>' + now.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
-  })}</small>`;
+  }) + '</small>';
 }
 
+// Get Pacific Time
+function getPacificNow() {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+  return new Date(formatter.format(new Date()));
+}
+
+// Format event time
 function formatEventTime(date) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
-  if (hours === 0 && minutes === 0) {
-    return "All Day";
-  }
+  if (hours === 0 && minutes === 0) return "All Day";
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// New: Get feed data only, don't render yet
+// Fetch and parse RSS feed
 function fetchRssFeed(url, replacementBaseUrl) {
   return fetch(url)
     .then(response => response.text())
@@ -50,8 +61,8 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
 
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const nowPacific = getPacificNow();
+      const today = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -68,12 +79,10 @@ function fetchRssFeed(url, replacementBaseUrl) {
         const title = item.querySelector("title")?.textContent;
         const pubDate = item.querySelector("pubDate")?.textContent;
         const eventDate = new Date(pubDate);
-
         const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
         let originalLink = item.querySelector("link")?.textContent;
         let newLink = "";
-
         try {
           const originalUrl = new URL(originalLink);
           newLink = replacementBaseUrl + originalUrl.search;
@@ -82,10 +91,16 @@ function fetchRssFeed(url, replacementBaseUrl) {
           newLink = originalLink;
         }
 
+        const isAllDay = eventDate.getHours() === 0 && eventDate.getMinutes() === 0;
+        const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
+
+        const isPast = !isAllDay && oneHourAfter.getTime() < nowPacific.getTime();
+
         const eventObj = {
           title,
           timeStr: formatEventTime(eventDate),
-          link: newLink
+          link: newLink,
+          isPast: isPast
         };
 
         if (eventDay.getTime() === today.getTime()) {
@@ -99,7 +114,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
     });
 }
 
-// Renders a section of events (after all feeds are loaded)
+// Render sections of events
 function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl) {
   const section = document.createElement("section");
 
@@ -125,18 +140,36 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
     if (events.length > 0) {
       const ul = document.createElement("ul");
+
       events.forEach(event => {
         const li = document.createElement("li");
-        li.innerHTML = `
-          <span class="event-time">${event.timeStr}</span>
-          <a href="${event.link}" target="_blank" rel="noopener noreferrer">${event.title}</a>
-        `;
+        const isPast = event.isPast;
+
+        // Debug log
+        console.log(`[DEBUG] "${event.title}" | isPast:`, isPast);
+
+        let eventHTML = `<span class="event-time">${event.timeStr}</span> `;
+        eventHTML += `<a href="${event.link}" target="_blank" rel="noopener noreferrer"`;
+
+        if (isPast) {
+          eventHTML += ' class="event-past">';
+          // eventHTML += '<i class="fa-solid fa-clock-rotate-left event-icon" aria-hidden="true"></i> ';
+          eventHTML += event.title;
+          eventHTML += ' <span class="event-past-note">(Earlier today)</span>';
+          eventHTML += ' <span class="sr-only">(This event has already started)</span>';
+        } else {
+          eventHTML += '>' + event.title;
+        }
+
+        eventHTML += '</a>';
+        li.innerHTML = eventHTML;
         ul.appendChild(li);
       });
+
       section.appendChild(ul);
     } else {
       const message = document.createElement("p");
-      message.textContent = `There are no ${title.toLowerCase()}.`;
+      message.textContent = 'There are no ' + title.toLowerCase() + '.';
       section.appendChild(message);
     }
   }
@@ -152,13 +185,12 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   }
 }
 
-
+// Start the app
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
 
   const loadingMessage = document.getElementById("loading-message");
 
-  // Fetch both feeds at once
   Promise.all([
     fetchRssFeed(
       'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
