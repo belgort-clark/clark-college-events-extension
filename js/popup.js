@@ -174,8 +174,8 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     }
   }
 
-  renderEventList("Events Today", data.todayEvents);
-  renderEventList("Events Tomorrow", data.tomorrowEvents);
+  renderEventList("Today", data.todayEvents);
+  renderEventList("Tomorrow", data.tomorrowEvents);
 
   const container = document.getElementById(containerId);
   if (container) {
