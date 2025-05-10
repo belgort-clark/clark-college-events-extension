@@ -61,12 +61,16 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
 
+      console.log(`📥 Fetching from: ${url}`);
+      console.log(`📄 RSS Items Found: ${items.length}`);
+
       const nowPacific = getPacificNow();
       const today = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const todayEvents = [];
+      const todayUpcomingEvents = [];
+      const todayEarlierEvents = [];
       const tomorrowEvents = [];
 
       const sortedItems = Array.from(items).sort((a, b) => {
@@ -93,7 +97,6 @@ function fetchRssFeed(url, replacementBaseUrl) {
 
         const isAllDay = eventDate.getHours() === 0 && eventDate.getMinutes() === 0;
         const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
-
         const isPast = !isAllDay && oneHourAfter.getTime() < nowPacific.getTime();
 
         const eventObj = {
@@ -104,13 +107,17 @@ function fetchRssFeed(url, replacementBaseUrl) {
         };
 
         if (eventDay.getTime() === today.getTime()) {
-          todayEvents.push(eventObj);
+          if (isPast) {
+            todayEarlierEvents.push(eventObj);
+          } else {
+            todayUpcomingEvents.push(eventObj);
+          }
         } else if (eventDay.getTime() === tomorrow.getTime()) {
           tomorrowEvents.push(eventObj);
         }
       });
 
-      return { todayEvents, tomorrowEvents };
+      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, fetchedAt: nowPacific };
     });
 }
 
@@ -134,51 +141,56 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   }
 
   function renderEventList(title, events) {
+    const shouldRenderEmpty = (title === "Today's Events" || title === "Tomorrow's Events");
+
+    if (events.length === 0 && !shouldRenderEmpty) {
+      return; // Don't show empty "Earlier Today"
+    }
+
     const subheading = document.createElement("h3");
     subheading.textContent = title;
     section.appendChild(subheading);
 
-    if (events.length > 0) {
-      const ul = document.createElement("ul");
-
-      events.forEach(event => {
-        const li = document.createElement("li");
-        const isPast = event.isPast;
-
-        // Debug log
-        console.log(`[DEBUG] "${event.title}" | isPast:`, isPast);
-
-        let eventHTML = `<span class="event-time">${event.timeStr}</span> `;
-        eventHTML += `<a href="${event.link}" target="_blank" rel="noopener noreferrer"`;
-
-        if (isPast) {
-          eventHTML += ' class="event-past">';
-          // eventHTML += '<i class="fa-solid fa-clock-rotate-left event-icon" aria-hidden="true"></i> ';
-          eventHTML += event.title;
-          eventHTML += ' <span class="event-past-note">(Earlier today)</span>';
-          eventHTML += ' <span class="sr-only">(This event has already started)</span>';
-        } else {
-          eventHTML += '>' + event.title;
-        }
-
-        eventHTML += '</a>';
-        li.innerHTML = eventHTML;
-        ul.appendChild(li);
-      });
-
-      section.appendChild(ul);
-    } else {
+    if (events.length === 0) {
       const message = document.createElement("p");
-      message.textContent = 'No events are scheduled at this time.';
+      message.textContent = 'No scheduled events.';
       section.appendChild(message);
+      return;
     }
+
+    const ul = document.createElement("ul");
+
+    events.forEach(event => {
+      const li = document.createElement("li");
+      const isPast = event.isPast;
+
+      let eventHTML = `<span class="event-time">${event.timeStr}</span> `;
+      eventHTML += `<a href="${event.link}" target="_blank" rel="noopener noreferrer"`;
+
+      if (isPast) {
+        eventHTML += ' >';
+        eventHTML += event.title;
+        // eventHTML += ' <span class="event-past-note">(<i class="fa-solid fa-clock-rotate-left event-icon" aria-hidden="true"></i> Earlier today)</span>';
+        // eventHTML += ' <span class="sr-only">(This event has already started)</span>';
+      } else {
+        eventHTML += '>' + event.title;
+      }
+
+      eventHTML += '</a>';
+      li.innerHTML = eventHTML;
+      ul.appendChild(li);
+    });
+
+    section.appendChild(ul);
   }
 
-  renderEventList("Today", data.todayEvents);
-  renderEventList("Tomorrow", data.tomorrowEvents);
+  renderEventList("Earlier Today's Events", data.todayEarlierEvents);
+  renderEventList("Today's Events", data.todayUpcomingEvents);
+  renderEventList("Tomorrow's Events", data.tomorrowEvents);
 
   const container = document.getElementById(containerId);
   if (container) {
+    section.classList.add("event-section");
     container.appendChild(section);
   } else {
     console.warn(`Container with ID "${containerId}" not found.`);
@@ -220,5 +232,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loadingMessage) {
       loadingMessage.style.display = 'none';
     }
+    // Unhide sections now that content is loaded
+    document.getElementById("general-events").style.display = "block";
+    document.getElementById("training-events").style.display = "block";
+    // document.getElementById("viewinbrowser").style.display = "block";
   });
 });

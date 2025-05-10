@@ -1,48 +1,57 @@
+/* ========== Base Styles ========== */
 body {
+    background: #fafafa;
     font-family: "Atkinson Hyperlegible", sans-serif;
     font-size: 18px;
-    margin: 20px;
-    padding-bottom: 20px;
     height: 600px;
+    margin: 10px;
     width: 740px;
 }
 
-.event-time {
-    display: inline-block;
-    width: 90px;
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
 
+ul.developmentteam {
+    list-style-type: disc;
+    margin: 10px;
+    padding: 10px;
+}
+
+footer {
+    margin-bottom: 0;
+}
+
+/* ========== Typography ========== */
 h1 {
-    display: flex;
     align-items: center;
-    justify-content: flex-start;
     color: #002855;
+    display: flex;
     font-size: 28px;
     font-weight: 700;
+    justify-content: flex-start;
     margin: 0;
 }
 
 h2 {
-    color: #002855;
     border-bottom: 1px solid #dadada;
-}
-
-h2 a:link,
-h2 a:visited,
-h2 a:active {
     color: #002855;
-    text-decoration: none;
-}
-
-h2 a:hover {
-    color: #002855;
-    text-decoration: underline;
 }
 
 h3 {
+    border-bottom: 1px solid #dadada;
     color: #535486;
 }
 
+.version {
+    color: #444;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* ========== Links ========== */
 a:link,
 a:visited {
     color: black;
@@ -55,42 +64,22 @@ a:hover {
     text-decoration: underline;
 }
 
-li {
-    list-style: square;
+/* Headings as links */
+h2 a:link,
+h2 a:visited,
+h2 a:active {
+    color: #002855;
+    text-decoration: none;
 }
 
-.version {
-    color: #444;
-    font-size: 18px;
-    margin-bottom: 20px;
+h2 a:hover {
+    color: #002855;
+    text-decoration: underline;
 }
 
-footer {
-    padding: 20px 0;
-}
-
-#loading-message {
-    color: #555;
-    margin-top: 20px;
-}
-
-#messages {
-    display: none;
-    border: 5px double #fff;
-    padding: 5px 15px 5px 15px;
-    margin: 20px 0;
-    border-radius: 6px;
-    color: #fff;
-    background-color: #002855;
-}
-
-#messages h2 {
-    color: #fff;
-    border: none;
-}
-
-#viewinbrowser {
-    margin: 30px 0 0 0;
+/* ========== Layout & Structure ========== */
+#container {
+    padding: 14px;
 }
 
 .modal-header {
@@ -107,21 +96,61 @@ footer {
     width: 100%;
 }
 
-.logo-icon {
-    vertical-align: text-bottom;
-    margin-right: 12px;
-    width: 80px;
+/* ========== Sections ========== */
+#general-events,
+#training-events {
+    background-color: #eaeaea;
+    border: 1px solid #dadada;
+    border-radius: 12px;
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    padding-top: 0;
     filter: drop-shadow(2px 2px 2px #3a3a3a);
+}
+
+/* ========== Logo ========== */
+.logo-icon {
+    filter: drop-shadow(2px 2px 2px #3a3a3a);
+    margin: 0 18px 0 0;
+    vertical-align: text-bottom;
+    width: 80px;
+}
+
+/* ========== Event Styling ========== */
+.event-time {
+    display: inline-block;
+    width: 90px;
 }
 
 a.event-past {
     color: #333;
-    opacity: .7;
+    opacity: 0.7;
 }
 
 .event-icon {
-    /* margin-right: 0.4em; */
     color: #4E87A0;
     font-size: 0.85em;
     vertical-align: middle;
+}
+
+/* ========== Messages & Notifications ========== */
+#messages {
+    background-color: #002855;
+    border: 5px double #fff;
+    border-radius: 6px;
+    color: #fff;
+    display: none;
+    margin: 20px 0;
+    padding: 5px 15px;
+}
+
+#messages h2 {
+    border: none;
+    color: #fff;
+}
+
+#loading-message {
+    color: #555;
+    margin-top: 20px;
 }
