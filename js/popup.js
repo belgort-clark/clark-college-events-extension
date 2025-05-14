@@ -29,7 +29,6 @@ function renderTodayDate() {
   }) + '</small>';
 }
 
-// Get Pacific Time
 function getPacificNow() {
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
@@ -44,7 +43,6 @@ function getPacificNow() {
   return new Date(formatter.format(new Date()));
 }
 
-// Format event time
 function formatEventTime(date) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
@@ -52,7 +50,6 @@ function formatEventTime(date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// Fetch and parse RSS feed
 function fetchRssFeed(url, replacementBaseUrl) {
   return fetch(url)
     .then(response => response.text())
@@ -60,9 +57,6 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
-
-      console.log(`📥 Fetching from: ${url}`);
-      console.log(`📄 RSS Items Found: ${items.length}`);
 
       const nowPacific = getPacificNow();
       const today = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
@@ -82,6 +76,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
       sortedItems.forEach((item) => {
         const title = item.querySelector("title")?.textContent;
         const pubDate = item.querySelector("pubDate")?.textContent;
+        const description = item.querySelector("description")?.textContent || "";
         const eventDate = new Date(pubDate);
         const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
@@ -103,7 +98,8 @@ function fetchRssFeed(url, replacementBaseUrl) {
           title,
           timeStr: formatEventTime(eventDate),
           link: newLink,
-          isPast: isPast
+          isPast,
+          description
         };
 
         if (eventDay.getTime() === today.getTime()) {
@@ -121,7 +117,6 @@ function fetchRssFeed(url, replacementBaseUrl) {
     });
 }
 
-// Render sections of events
 function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl) {
   const section = document.createElement("section");
 
@@ -143,9 +138,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   function renderEventList(title, events) {
     const shouldRenderEmpty = (title === "Today's Events" || title === "Tomorrow's Events");
 
-    if (events.length === 0 && !shouldRenderEmpty) {
-      return; // Don't show empty "Earlier Today"
-    }
+    if (events.length === 0 && !shouldRenderEmpty) return;
 
     const subheading = document.createElement("h3");
     subheading.textContent = title;
@@ -162,22 +155,74 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
     events.forEach(event => {
       const li = document.createElement("li");
-      const isPast = event.isPast;
 
-      let eventHTML = `<span class="event-time">${event.timeStr}</span> `;
-      eventHTML += `<a href="${event.link}" target="_blank" rel="noopener noreferrer"`;
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "event-time";
+      timeSpan.textContent = event.timeStr;
 
-      if (isPast) {
-        eventHTML += ' >';
-        eventHTML += event.title;
-        // eventHTML += ' <span class="event-past-note">(<i class="fa-solid fa-clock-rotate-left event-icon" aria-hidden="true"></i> Earlier today)</span>';
-        // eventHTML += ' <span class="sr-only">(This event has already started)</span>';
-      } else {
-        eventHTML += '>' + event.title;
-      }
+      const link = document.createElement("a");
+      link.href = event.link;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = event.title;
+      if (event.isPast) link.classList.add("event-past");
 
-      eventHTML += '</a>';
-      li.innerHTML = eventHTML;
+      const infoButton = document.createElement("button");
+      infoButton.className = "info-icon";
+      infoButton.setAttribute("aria-label", "More information about this event");
+      infoButton.setAttribute("tabindex", "0");
+      infoButton.setAttribute("role", "button");
+      infoButton.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
+
+      const popup = document.createElement("div");
+      popup.className = "event-popup";
+      popup.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div></div>
+          <button class="popup-close" aria-label="Close popup" style="border: none; background: none; font-size: 1.2em; cursor: pointer;">×</button>
+        </div>
+        <div><strong>${event.title}</strong></div>
+        <div>${event.description}</div>
+      `;
+
+      const closeButton = popup.querySelector(".popup-close");
+      closeButton.addEventListener("click", () => {
+        popup.classList.remove("visible");
+        infoButton.classList.remove("active");
+      });
+
+      infoButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // prevent click from bubbling
+
+        const isOpen = popup.classList.contains("visible");
+
+        // Close all popups first
+        document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
+        document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
+
+        if (!isOpen) {
+          // Show this one
+          infoButton.classList.add("active");
+          popup.classList.add("visible");
+
+          // Position check
+          requestAnimationFrame(() => {
+            const rect = popup.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            if (spaceBelow < 100 && spaceAbove > rect.height + 20) {
+              popup.classList.add("above");
+            } else {
+              popup.classList.remove("above");
+            }
+          });
+        }
+      });
+      li.appendChild(timeSpan);
+      li.appendChild(link);
+      li.appendChild(infoButton);
+      li.appendChild(popup);
       ul.appendChild(li);
     });
 
@@ -197,7 +242,6 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   }
 }
 
-// Start the app
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
 
@@ -232,9 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loadingMessage) {
       loadingMessage.style.display = 'none';
     }
-    // Unhide sections now that content is loaded
     document.getElementById("general-events").style.display = "block";
     document.getElementById("training-events").style.display = "block";
-    // document.getElementById("viewinbrowser").style.display = "block";
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
+      document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
+    });
   });
 });

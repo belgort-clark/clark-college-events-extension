@@ -3,59 +3,30 @@ body {
     background: #fafafa;
     font-family: "Atkinson Hyperlegible", sans-serif;
     font-size: 18px;
-    height: 600px;
     margin: 10px;
+    height: 600px;
     width: 740px;
-}
-
-ul {
-    list-style-type: none;
-    margin-bottom: 18px;
-    padding: 0;
-}
-
-li {
-    display: flex;
-    align-items: flex-start;
-}
-
-li a {
-    flex-grow: 1;
-    /* line-height: 1.4; */
-    text-decoration: none;
-    color: #000;
-    /* optional */
-}
-
-ul.changelog li {
-    display: list-item;
-    list-style-type: disc;
-    margin-left: 20px;
-}
-
-footer {
-    margin-bottom: 0;
 }
 
 /* ========== Typography ========== */
 h1 {
-    align-items: center;
-    color: #002855;
     display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #002855;
     font-size: 28px;
     font-weight: 700;
-    justify-content: flex-start;
     margin: 0;
 }
 
 h2 {
-    border-bottom: 1px solid #dadada;
     color: #002855;
+    border-bottom: 1px solid #dadada;
 }
 
 h3 {
-    border-bottom: 1px solid #dadada;
     color: #535486;
+    border-bottom: 1px solid #dadada;
 }
 
 .version {
@@ -68,8 +39,8 @@ h3 {
 a:link,
 a:visited {
     color: black;
-    outline: 0;
     text-decoration: none;
+    outline: 0;
 }
 
 a:focus,
@@ -77,7 +48,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Headings as links */
 h2 a:link,
 h2 a:visited,
 h2 a:active {
@@ -86,11 +56,10 @@ h2 a:active {
 }
 
 h2 a:hover {
-    color: #002855;
     text-decoration: underline;
 }
 
-/* ========== Layout & Structure ========== */
+/* ========== Layout ========== */
 #container {
     padding: 14px;
 }
@@ -109,44 +78,88 @@ h2 a:hover {
     width: 100%;
 }
 
-/* ========== Sections ========== */
-#general-events,
-#training-events {
-    background-color: #eaeaea;
-    border: 1px solid #dadada;
-    border-radius: 12px;
-    display: none;
-    margin-top: 20px;
-    padding: 20px;
-    padding-top: 0;
-    filter: drop-shadow(2px 2px 2px #3a3a3a);
+footer {
+    margin-bottom: 0;
 }
 
 /* ========== Logo ========== */
 .logo-icon {
-    filter: drop-shadow(2px 2px 2px #3a3a3a);
+    width: 80px;
     margin: 0 18px 0 20px;
     vertical-align: text-bottom;
-    width: 80px;
+    filter: drop-shadow(2px 2px 2px #3a3a3a);
+}
+
+/* ========== Lists ========== */
+ul {
+    list-style-type: none;
+    margin-bottom: 18px;
+    padding: 0;
+}
+
+ul.changelog li {
+    display: list-item;
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+li {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    overflow: visible;
+    z-index: auto;
+}
+
+li a {
+    flex-grow: 1;
+    text-decoration: none;
+    color: #000;
+}
+
+/* ========== Sections ========== */
+#general-events,
+#training-events {
+    display: none;
+    background-color: #eaeaea;
+    padding: 20px;
+    padding-top: 0;
+    margin-top: 20px;
+    border-radius: 12px;
+    border: 1px solid #dadada;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== Messages ========== */
+#messages {
+    display: none;
+    border-radius: 6px;
+    margin: 20px 0;
+    padding: 5px 15px;
+    color: #fff;
+    background-color: #002855;
+    filter: drop-shadow(2px 2px 2px #3a3a3a);
+}
+
+#messages h2 {
+    color: #fff;
+    border: none;
+}
+
+#loading-message {
+    color: #555;
+    margin-top: 20px;
 }
 
 /* ========== Event Styling ========== */
-/* .event-time {
-    display: inline-block;
-    width: 90px;
-} */
-
-/* temp css */
 .event-time {
     width: 100px;
-    /* Adjust based on your design */
     flex-shrink: 0;
-    /* font-weight: bold; */
 }
 
 a.event-past {
     color: #333;
-    opacity: 0.7;
+    /* opacity: 0.7; */
 }
 
 .event-icon {
@@ -155,23 +168,52 @@ a.event-past {
     vertical-align: middle;
 }
 
-/* ========== Messages & Notifications ========== */
-#messages {
-    background-color: #002855;
-    border-radius: 6px;
-    color: #fff;
-    display: none;
-    margin: 20px 0;
-    padding: 5px 15px;
-    filter: drop-shadow(2px 2px 2px #3a3a3a);
-}
-
-#messages h2 {
+.info-icon {
+    background: none;
     border: none;
-    color: #fff;
+    cursor: pointer;
+    color: #004785;
+    /* Darker blue for better contrast */
+    margin-left: 8px;
+    font-size: 1rem;
+    vertical-align: middle;
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
 }
 
-#loading-message {
-    color: #555;
-    margin-top: 20px;
+.info-icon i {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.info-icon:focus {
+    outline: 2px solid #004785;
+    outline-offset: 2px;
+}
+
+.info-icon.active {
+    color: #d85c27;
+}
+
+/* ========== Popups ========== */
+.event-popup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 600px;
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    white-space: normal;
+}
+
+.event-popup.visible {
+    display: block;
 }
