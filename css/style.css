@@ -10,14 +10,27 @@ body {
 
 ul {
     list-style-type: none;
-    margin: 0;
+    margin-bottom: 18px;
     padding: 0;
 }
 
-ul.developmentteam {
+li {
+    display: flex;
+    align-items: flex-start;
+}
+
+li a {
+    flex-grow: 1;
+    /* line-height: 1.4; */
+    text-decoration: none;
+    color: #000;
+    /* optional */
+}
+
+ul.changelog li {
+    display: list-item;
     list-style-type: disc;
-    margin: 10px;
-    padding: 10px;
+    margin-left: 20px;
 }
 
 footer {
@@ -112,15 +125,23 @@ h2 a:hover {
 /* ========== Logo ========== */
 .logo-icon {
     filter: drop-shadow(2px 2px 2px #3a3a3a);
-    margin: 0 18px 0 0;
+    margin: 0 18px 0 20px;
     vertical-align: text-bottom;
     width: 80px;
 }
 
 /* ========== Event Styling ========== */
-.event-time {
+/* .event-time {
     display: inline-block;
     width: 90px;
+} */
+
+/* temp css */
+.event-time {
+    width: 100px;
+    /* Adjust based on your design */
+    flex-shrink: 0;
+    /* font-weight: bold; */
 }
 
 a.event-past {
@@ -137,12 +158,12 @@ a.event-past {
 /* ========== Messages & Notifications ========== */
 #messages {
     background-color: #002855;
-    border: 5px double #fff;
     border-radius: 6px;
     color: #fff;
     display: none;
     margin: 20px 0;
     padding: 5px 15px;
+    filter: drop-shadow(2px 2px 2px #3a3a3a);
 }
 
 #messages h2 {
