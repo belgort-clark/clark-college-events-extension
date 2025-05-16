@@ -62,6 +62,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const today = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      const normalizedTomorrow = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
       const todayUpcomingEvents = [];
       const todayEarlierEvents = [];
@@ -108,7 +109,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
           } else {
             todayUpcomingEvents.push(eventObj);
           }
-        } else if (eventDay.getTime() === tomorrow.getTime()) {
+        } else if (eventDay.getTime() === normalizedTomorrow.getTime()) {
           tomorrowEvents.push(eventObj);
         }
       });
@@ -119,7 +120,6 @@ function fetchRssFeed(url, replacementBaseUrl) {
 
 function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl) {
   const section = document.createElement("section");
-
   const heading = document.createElement("h2");
   const headingLink = document.createElement("a");
   headingLink.href = sectionLinkUrl;
@@ -136,8 +136,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   }
 
   function renderEventList(title, events) {
-    const shouldRenderEmpty = (title === "Today's Events" || title === "Tomorrow's Events");
-
+    const shouldRenderEmpty = (title === "Today" || title === "Tomorrow");
     if (events.length === 0 && !shouldRenderEmpty) return;
 
     const subheading = document.createElement("h3");
@@ -152,7 +151,6 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     }
 
     const ul = document.createElement("ul");
-
     events.forEach(event => {
       const li = document.createElement("li");
 
@@ -179,38 +177,29 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
       popup.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div></div>
-          <button class="popup-close" aria-label="Close popup" style="border: none; background: none; font-size: 1.2em; cursor: pointer;">×</button>
+          <button class="popup-close" aria-label="Close popup" style="border: none; background: none; font-size: 1.2em; cursor: pointer;">&times;</button>
         </div>
         <div><strong>${event.title}</strong></div>
         <div>${event.description}</div>
       `;
 
-      const closeButton = popup.querySelector(".popup-close");
-      closeButton.addEventListener("click", () => {
+      popup.querySelector(".popup-close").addEventListener("click", () => {
         popup.classList.remove("visible");
         infoButton.classList.remove("active");
       });
 
       infoButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // prevent click from bubbling
-
+        e.stopPropagation();
         const isOpen = popup.classList.contains("visible");
-
-        // Close all popups first
         document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
         document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
-
         if (!isOpen) {
-          // Show this one
           infoButton.classList.add("active");
           popup.classList.add("visible");
-
-          // Position check
           requestAnimationFrame(() => {
             const rect = popup.getBoundingClientRect();
             const spaceBelow = window.innerHeight - rect.bottom;
             const spaceAbove = rect.top;
-
             if (spaceBelow < 100 && spaceAbove > rect.height + 20) {
               popup.classList.add("above");
             } else {
@@ -219,6 +208,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
           });
         }
       });
+
       li.appendChild(timeSpan);
       li.appendChild(link);
       li.appendChild(infoButton);
@@ -244,9 +234,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
-
   const loadingMessage = document.getElementById("loading-message");
-
   Promise.all([
     fetchRssFeed(
       'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
@@ -273,12 +261,9 @@ document.addEventListener("DOMContentLoaded", () => {
       'https://www.clark.edu/tlc/main-schedule.php'
     );
   }).finally(() => {
-    if (loadingMessage) {
-      loadingMessage.style.display = 'none';
-    }
+    if (loadingMessage) loadingMessage.style.display = 'none';
     document.getElementById("general-events").style.display = "block";
     document.getElementById("training-events").style.display = "block";
-
     document.addEventListener("click", () => {
       document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
       document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
