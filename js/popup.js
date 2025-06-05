@@ -219,8 +219,8 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     section.appendChild(ul);
   }
 
-  renderEventList("Earlier Today", data.todayEarlierEvents);
   renderEventList("Today", data.todayUpcomingEvents);
+  renderEventList("Earlier Today", data.todayEarlierEvents);
   renderEventList("Tomorrow", data.tomorrowEvents);
 
   const container = document.getElementById(containerId);
