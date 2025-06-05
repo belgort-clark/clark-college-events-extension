@@ -2,21 +2,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.querySelector("#search");
     const resultsContainer = document.querySelector("#search-results");
 
+    // Create two separate <ul> elements (one for general events, one for training)
     const eventList = document.createElement("ul");
     eventList.id = "event-results";
+
     const trainingList = document.createElement("ul");
     trainingList.id = "training-results";
 
+    // Create headings for each section
     const eventHeader = document.createElement("h3");
-    eventHeader.textContent = "Events at Clark Clark College";
+    eventHeader.textContent = "Events at Clark College";
+
     const trainingHeader = document.createElement("h3");
     trainingHeader.textContent = "Employee Training and Development Events";
 
+    // Append headings + lists to the search-results container
     resultsContainer.appendChild(eventHeader);
     resultsContainer.appendChild(eventList);
     resultsContainer.appendChild(trainingHeader);
     resultsContainer.appendChild(trainingList);
-    resultsContainer.style.display = "none";
+    resultsContainer.style.display = "none"; // hide until we have results
 
     const feeds = [
         {
@@ -83,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const titleDiv = document.createElement("div");
         titleDiv.innerHTML = `<strong>${event.title}</strong>`;
+
         const descDiv = document.createElement("div");
         descDiv.innerHTML = event.description;
 
@@ -146,7 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         try {
                             const originalUrl = new URL(link);
                             newLink = feed.baseUrl + originalUrl.search;
-                        } catch (e) { }
+                        } catch (e) {
+                            // leave link unchanged if URL parsing fails
+                        }
 
                         return {
                             title,
@@ -165,9 +173,14 @@ document.addEventListener("DOMContentLoaded", () => {
             trainingList.innerHTML = "";
 
             if (allMatches.length === 0) {
-                const noResult = document.createElement("p");
-                noResult.textContent = "No events found.";
-                eventList.appendChild(noResult);
+                // No matches at all: show one message under “Events” AND one under “Training Events”
+                const noEvent = document.createElement("p");
+                noEvent.textContent = "No scheduled events.";
+                eventList.appendChild(noEvent);
+
+                const noTraining = document.createElement("p");
+                noTraining.textContent = "No scheduled events.";
+                trainingList.appendChild(noTraining);
             } else {
                 allMatches.sort((a, b) => a.date - b.date);
                 let hasEvent = false;
@@ -184,15 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
 
+                // If no general “Events” matched, show message there
                 if (!hasEvent) {
                     const noEvent = document.createElement("p");
-                    noEvent.textContent = "No Events found.";
+                    noEvent.textContent = "No events scheduled.";
                     eventList.appendChild(noEvent);
                 }
 
+                // If no “Training Events” matched, show message there
                 if (!hasTraining) {
                     const noTraining = document.createElement("p");
-                    noTraining.textContent = "No Training Events found.";
+                    noTraining.textContent = "No training events scheduled.";
                     trainingList.appendChild(noTraining);
                 }
             }
@@ -216,6 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchAndSearchFeeds(searchTerm);
     });
 
+    // Clicking anywhere outside closes any open popup
     document.addEventListener("click", () => {
         document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
         document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
