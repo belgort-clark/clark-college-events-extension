@@ -44,7 +44,8 @@ a:visited {
 }
 
 a:focus,
-a:hover {
+a:hover,
+.search-event-title-wrap a:hover {
     text-decoration: underline;
 }
 
@@ -55,15 +56,16 @@ h2 a:active {
     text-decoration: none;
 }
 
-h2 a:hover {
-    text-decoration: underline;
-}
-
-/* ========== Layout ========== */
+/* ========== Containers & Layout ========== */
 #container {
     padding: 14px;
 }
 
+footer {
+    margin-bottom: 0;
+}
+
+/* ========== Modal Styles ========== */
 .modal-header {
     align-items: center;
 }
@@ -78,10 +80,6 @@ h2 a:hover {
     width: 100%;
 }
 
-footer {
-    margin-bottom: 0;
-}
-
 /* ========== Logo ========== */
 .logo-icon {
     width: 80px;
@@ -90,7 +88,7 @@ footer {
     filter: drop-shadow(2px 2px 2px #3a3a3a);
 }
 
-/* ========== Lists ========== */
+/* ========== List Styles ========== */
 ul {
     list-style-type: none;
     margin-bottom: 18px;
@@ -117,9 +115,10 @@ li a {
     color: #000;
 }
 
-/* ========== Sections ========== */
+/* ========== Event Sections ========== */
 #general-events,
-#training-events {
+#training-events,
+#search-results {
     display: none;
     background-color: #eaeaea;
     padding: 20px;
@@ -128,6 +127,10 @@ li a {
     border-radius: 12px;
     border: 1px solid #dadada;
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+#search-results {
+    padding: 0 20px 20px 20px;
 }
 
 /* ========== Messages ========== */
@@ -159,7 +162,6 @@ li a {
 
 a.event-past {
     color: #333;
-    /* opacity: 0.7; */
 }
 
 .event-icon {
@@ -173,7 +175,6 @@ a.event-past {
     border: none;
     cursor: pointer;
     color: #004785;
-    /* Darker blue for better contrast */
     margin-left: 8px;
     font-size: 1rem;
     vertical-align: middle;
@@ -182,7 +183,7 @@ a.event-past {
 }
 
 .info-icon i {
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .info-icon:focus {
@@ -195,7 +196,8 @@ a.event-past {
 }
 
 /* ========== Popups ========== */
-.event-popup {
+.event-popup,
+.search-event-popup {
     display: none;
     position: fixed;
     left: 50%;
@@ -214,6 +216,85 @@ a.event-past {
     white-space: normal;
 }
 
-.event-popup.visible {
+.event-popup.visible,
+.search-event-popup.visible {
     display: block;
+}
+
+.popup-close {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    line-height: 1;
+}
+
+/* ========== Search Input ========== */
+#search {
+    width: 100%;
+    padding: 10px;
+    font-size: 1.2em;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    border: none;
+}
+
+#search-input {
+    padding: 0 20px 0 0;
+}
+
+#search h2 {
+    margin-bottom: 10px;
+}
+
+/* ========== Search Event Results ========== */
+.search-event-list li {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.search-event-time {
+    width: 190px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: #333;
+    font-size: 0.9em;
+    font-weight: bold;
+    font-family: "Atkinson Hyperlegible", sans-serif;
+}
+
+.search-event-title-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-event-title-wrap a {
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ========== Misc ========== */
+#back-to-events {
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.search-heading {
+    display: none;
+    margin-top: 20px;
+    color: #002855;
+    border-bottom: 1px solid #dadada;
+    font-size: 1.2em;
+    font-weight: bold;
 }

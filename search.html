@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Search Clark College Events</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="container">
+        <header class="modal-header">
+            <h1>
+                <img class="logo-icon" src="images/logo.png"
+                    alt="Clark College Logo">
+                Clark College Event Search
+            </h1>
+        </header>
+
+        <main>
+            <a href="popup.html" id="back-to-events">Back to Events</a>
+            <h2 class="search-h2">Search upcoming events</h2>
+            <div id="search-input">
+                <input type="text" id="search" placeholder="Search events..."
+                    aria-label="Search events">
+            </div>
+            <div id="search-results">
+                <h2>Search Results</h2>
+
+                <h3 id="events-heading" class="search-heading">Events</h3>
+                <ul id="events-results" class="search-event-list"></ul>
+
+                <h3 id="training-heading" class="search-heading">Training Events
+                </h3>
+                <ul id="training-results" class="search-event-list"></ul>
+            </div>
+        </main>
+    </div>
+    <script src="js/search.js"></script>
+</body>
+
+</html>

@@ -131,7 +131,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
   if (descriptionText) {
     const intro = document.createElement("p");
-    intro.textContent = descriptionText;
+    intro.innerHTML = descriptionText;
     section.appendChild(intro);
   }
 
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEventSection(
       'general-events',
       'Events at Clark College',
-      'Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.',
+      'Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.<br><br>Looking for something specific? <a href=\"search.html\">Search upcoming events</a>.',
       generalData,
       'https://www.clark.edu/about/calendars/events.php'
     );
@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEventSection(
       'training-events',
       'Employee Training and Development Events',
-      'These events are part of Clark College\'s Employee Training and Development programs happening today and tomorrow.',
+      'These events are part of Clark College\'s Employee Training and Development programs happening today and tomorrow.<br><br>Looking for something specific? <a href=\"search.html\">Search upcoming events</a>.',
       trainingData,
       'https://www.clark.edu/tlc/main-schedule.php'
     );
