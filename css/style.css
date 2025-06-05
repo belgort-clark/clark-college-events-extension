@@ -265,9 +265,9 @@ a.event-past {
     width: 190px;
     flex-shrink: 0;
     white-space: nowrap;
-    color: #333;
-    font-size: 0.9em;
-    font-weight: bold;
+    /* color: #333; */
+    /* font-size: 0.9em; */
+    /* font-weight: bold; */
     font-family: "Atkinson Hyperlegible", sans-serif;
 }
 
