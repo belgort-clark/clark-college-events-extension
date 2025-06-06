@@ -36,8 +36,8 @@
             <ul>
                 <li><a href="popup.html">🏡 Home</a></li>
                 <li><a href="search.html">🔍 Search Events</a></li>
-                <li><a href="about.html">ℹ️  About</a></li>
                 <li><a href="help.html">🛟 Help & FAQ</a></li>
+                <li><a href="about.html">ℹ️ About</a></li>
                 <li><a href="changelog.html">🛠️ Change Log</a></li>
             </ul>
         </nav>
@@ -45,13 +45,19 @@
         <main>
             <h2 class="search-h2">Search Upcoming Events</h2>
             <p>Begin typing to search upcoming events...</p>
+            <!-- …inside <main>… -->
+
             <div id="search-input">
-                <input type="text" id="search" placeholder="Search events..."
-                    aria-label="Search events" autofocus>
+                <div id="search-input">
+                    <input type="text" id="search" autofocus>
+                    <button id="clear-search" aria-label="Clear"
+                        title="Clear">&times;</button>
+                </div>
             </div>
 
             <div id="search-results">
                 <h2>Search Results</h2>
+
                 <h3 id="events-heading" class="search-heading">Events</h3>
                 <ul id="events-results" class="search-event-list"></ul>
 

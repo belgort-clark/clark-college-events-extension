@@ -327,17 +327,67 @@ nav ul li a:active {
 nav ul li a:hover,
 nav ul li a:focus {
     text-decoration: underline;
+    text-underline-offset: 6px;
 }
 
 /* ========== Restore bullets for #devteam only ========== */
 #devteam {
-  list-style-type: disc;       /* turn bullets back on */
-  list-style-position: outside;/* place bullet outside text */
-  padding-left: 1.2em;         /* restore left indent for bullet */
-  margin: 0;                   /* reset any extra margins */
+    list-style-type: disc;
+    /* turn bullets back on */
+    list-style-position: outside;
+    /* place bullet outside text */
+    padding-left: 1.2em;
+    /* restore left indent for bullet */
+    margin: 0;
+    /* reset any extra margins */
 }
 
 #devteam li {
-  display: list-item;          /* revert li back to list-item so bullet shows */
-  margin-left: 0;              /* clear any extra left margin */
+    display: list-item;
+    /* revert li back to list-item so bullet shows */
+    margin-left: 0;
+    /* clear any extra left margin */
+}
+
+/* …existing rules… */
+
+/* make the wrapper position:relative so we can absolutely position the × inside it */
+#search-input {
+    position: relative;
+    max-width: 400px;
+    /* whatever max width you want */
+    width: 100%;
+}
+
+/* the actual text input */
+#search {
+    width: 100%;
+    padding: 10px;
+    padding-right: 2.0em;
+    /* leave room on the right for the × */
+    font-size: 1.2em;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* style the clear button so it sits on top of the right edge of the input */
+#clear-search {
+    position: absolute;
+    top: 50%;
+    right: 1.75em;
+    /* tweak to line up nicely */
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    color: #555;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+/* optionally change color on hover/focus */
+#clear-search:hover {
+    color: #d85c27;
 }
