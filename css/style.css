@@ -31,8 +31,7 @@ h3 {
 
 .version {
     color: #444;
-    font-size: 18px;
-    margin-bottom: 20px;
+    margin: 40px 0;
 }
 
 /* ========== Links ========== */
@@ -297,4 +296,48 @@ a.event-past {
     border-bottom: 1px solid #dadada;
     font-size: 1.2em;
     font-weight: bold;
+}
+
+/* navigation */
+nav ul {
+    margin-left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    list-style-type: none;
+    background: #002855;
+    background: #535486;
+    border-radius: 8px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+    border: 1px solid #dadada;
+}
+
+nav ul li {
+    display: inline-block;
+    padding: 10px 15px 10px 15px;
+    margin: 0;
+}
+
+nav ul li a:link,
+nav ul li a:visited,
+nav ul li a:active {
+    color: white;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+    text-decoration: underline;
+}
+
+/* ========== Restore bullets for #devteam only ========== */
+#devteam {
+  list-style-type: disc;       /* turn bullets back on */
+  list-style-position: outside;/* place bullet outside text */
+  padding-left: 1.2em;         /* restore left indent for bullet */
+  margin: 0;                   /* reset any extra margins */
+}
+
+#devteam li {
+  display: list-item;          /* revert li back to list-item so bullet shows */
+  margin-left: 0;              /* clear any extra left margin */
 }

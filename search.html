@@ -5,9 +5,20 @@
     <meta charset="UTF-8">
     <title>Search Clark College Events</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- exactly the same Google-Fonts preload + Atkinson Hyperlegible import that popup.html uses: -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700"
+        rel="stylesheet">
+
+    <!-- Font Awesome (for the “i” icons) -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- your shared CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
@@ -16,12 +27,22 @@
             <h1>
                 <img class="logo-icon" src="images/logo.png"
                     alt="Clark College Logo">
-                Clark College Event Search
+                Clark College Events<br>
+                Search Events
             </h1>
         </header>
 
+        <nav>
+            <ul>
+                <li><a href="popup.html">🏡 Home</a></li>
+                <li><a href="search.html">🔍 Search Events</a></li>
+                <li><a href="about.html">ℹ️  About</a></li>
+                <li><a href="help.html">🛟 Help & FAQ</a></li>
+                <li><a href="changelog.html">🛠️ Change Log</a></li>
+            </ul>
+        </nav>
+
         <main>
-            <a href="popup.html" id="back-to-events">&larr; Back to Event Page</a>
             <h2 class="search-h2">Search Upcoming Events</h2>
             <p>Begin typing to search upcoming events...</p>
             <div id="search-input">
@@ -31,7 +52,6 @@
 
             <div id="search-results">
                 <h2>Search Results</h2>
-
                 <h3 id="events-heading" class="search-heading">Events</h3>
                 <ul id="events-results" class="search-event-list"></ul>
 
@@ -39,7 +59,6 @@
                 </h3>
                 <ul id="training-results" class="search-event-list"></ul>
             </div>
-
         </main>
     </div>
     <script src="js/search.js"></script>

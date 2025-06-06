@@ -21,12 +21,12 @@ fetch(messagesUrl)
 function renderTodayDate() {
   const now = new Date();
   const heading = document.querySelector('#event-date');
-  heading.innerHTML = 'Clark College Events <br><small>' + now.toLocaleDateString(undefined, {
+  heading.innerHTML = 'Clark College Events <br>' + now.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
-  }) + '</small>';
+  });
 }
 
 function getPacificNow() {
@@ -248,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEventSection(
       'general-events',
       'Events at Clark College',
-      'Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.<br><br>Looking for something specific? <a href=\"search.html\">Search upcoming events</a>.',
+      'Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.',
       generalData,
       'https://www.clark.edu/about/calendars/events.php'
     );
@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderEventSection(
       'training-events',
       'Employee Training and Development Events',
-      'These events are part of Clark College\'s Employee Training and Development programs happening today and tomorrow.<br><br>Looking for something specific? <a href=\"search.html\">Search upcoming events</a>.',
+      'These events are part of Clark College\'s Employee Training and Development programs happening today and tomorrow.',
       trainingData,
       'https://www.clark.edu/tlc/main-schedule.php'
     );
