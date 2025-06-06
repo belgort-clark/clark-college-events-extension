@@ -77,7 +77,11 @@ function fetchRssFeed(url, replacementBaseUrl) {
       sortedItems.forEach((item) => {
         const title = item.querySelector("title")?.textContent;
         const pubDate = item.querySelector("pubDate")?.textContent;
-        const description = item.querySelector("description")?.textContent || "";
+        const rawDescription = item.querySelector("description")?.textContent || "";
+        const description = rawDescription
+          .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
+          .replace(/(<br\s*\/?>\s*)+$/gi, '');
+
         const eventDate = new Date(pubDate);
         const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 

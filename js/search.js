@@ -142,7 +142,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     return Array.from(items).map(item => {
                         const title = item.querySelector("title")?.textContent || "";
-                        const description = item.querySelector("description")?.textContent || "";
+                        // const description = item.querySelector("description")?.textContent || "";
+                        let description = item.querySelector("description")?.textContent || "";
+                        description = description
+                            .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
+                            .replace(/(<br\s*\/?>\s*)+$/gi, '');
                         const link = item.querySelector("link")?.textContent || "";
                         const pubDate = new Date(item.querySelector("pubDate")?.textContent || new Date());
 

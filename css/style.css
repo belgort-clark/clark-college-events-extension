@@ -244,6 +244,16 @@ a.event-past {
     border: none;
 }
 
+#search:active,
+#search:focus {
+    outline: none;
+    /* removes the default blue outline */
+    border: 2px solid #535486;
+    /* orange border instead */
+    /* box-shadow: 0 0 5px #ff6600; */
+    /* optional glowing effect */
+}
+
 #search-input {
     padding: 0 20px 0 0;
 }
@@ -390,4 +400,10 @@ nav ul li a:focus {
 /* optionally change color on hover/focus */
 #clear-search:hover {
     color: #d85c27;
+}
+
+#active-page {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-color: #6bbbae;
 }
