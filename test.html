@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clark College Event Search – Mockup</title>
+  <style>
+    /* ================= Base Styles ================= */
+    body {
+      background: #fafafa;
+      font-family: "Atkinson Hyperlegible", sans-serif;
+      font-size: 18px;
+      margin: 10px;
+      width: 740px;
+      height: auto;
+    }
+    a {
+      color: #004785;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* ================= Header ================= */
+    #header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    #header img {
+      width: 80px;
+      margin-right: 18px;
+      filter: drop-shadow(2px 2px 2px #3a3a3a);
+    }
+    #header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #002855;
+      margin: 0;
+    }
+
+    /* ================= “Back to Events” Link ================= */
+    #back-link {
+      display: inline-block;
+      color: #004785;
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    #back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ================= “Search Upcoming Events” Heading ================= */
+    #search-heading {
+      font-size: 24px;
+      font-weight: 700;
+      color: #002855;
+      border-bottom: 1px solid #dadada;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+    }
+
+    /* ================= Instruction Text ================= */
+    #search-instructions {
+      font-size: 1em;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    /* ================= Search Input ================= */
+    #search {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.2em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    /* ================= Search Results Card ================= */
+    #search-results {
+      display: block;   /* Show immediately in mockup */
+      background-color: #eaeaea;
+      border: 1px solid #dadada;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    /* H2 inside the search-results card */
+    #search-results h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #002855;
+      border-bottom: 1px solid #dadada;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+    }
+
+    /* H3 sub‐sections (“Events at Clark College”, “Employee Training…”) */
+    #search-results h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #4B4F7A;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #c0c0c0;
+      padding-bottom: 2px;
+    }
+
+    /* ================= Result Lists ================= */
+    #search-results ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Each row in the search results */
+    #search-results ul.search-event-list li {
+      display: flex;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+      position: relative;
+      transition: background-color 0.2s ease;
+    }
+    #search-results ul.search-event-list li:last-child {
+      border-bottom: none;
+    }
+    #search-results ul.search-event-list li:hover {
+      background-color: rgba(0, 40, 80, 0.05);
+    }
+
+    /* Fixed‐width Date/Time column */
+    .search-event-time {
+      width: 160px;          /* wide enough for "Fri, Jun 6 12:00 PM" */
+      text-align: right;
+      padding-right: 12px;
+      color: #333;
+      font-weight: 600;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* Title & Info‐Icon wrapper */
+    .search-event-title-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Link styling for titles */
+    .search-event-title-wrap a {
+      color: #000;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .search-event-title-wrap a:hover {
+      text-decoration: underline;
+    }
+
+    /* ================= “No Results Found” Messaging ================= */
+    #search-results .no-results {
+      color: #666;
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* ================= Info‐Icon & Popup ================= */
+    .info-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #004785;
+      margin-left: 12px;
+      font-size: 1.2rem;
+      vertical-align: middle;
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+    }
+    .info-icon.active {
+      color: #d85c27;
+    }
+    .info-icon:hover {
+      filter: brightness(115%);
+    }
+
+    /* Popup styling (identical to main card) */
+    .event-popup {
+      display: none;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 600px;
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 9999;
+      white-space: normal;
+    }
+    .event-popup.visible {
+      display: block;
+    }
+
+    /* Close “×” button (top‐right of popup) */
+    .popup-close {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      line-height: 1;
+    }
+
+    /* If popup needs to float above instead of below: */
+    .event-popup.above {
+      bottom: auto;
+      top: 20px;
+    }
+  </style>
+  <!-- Load Font Awesome for the “i” icon -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+</head>
+<body>
+  <!-- Header / Logo -->
+  <div id="header">
+    <img src="https://via.placeholder.com/80x80.png?text=📅" alt="Calendar Icon" />
+    <h1>Clark College Event Search</h1>
+  </div>
+
+  <!-- Back Link -->
+  <a id="back-link" href="popup.html">&larr; Back to Event Page</a>
+
+  <!-- Page Title / H2 -->
+  <div id="search-heading">Search Upcoming Events</div>
+
+  <!-- Instructional Text -->
+  <p id="search-instructions">Begin typing to search upcoming events…</p>
+
+  <!-- Search Input (non‐functional in mockup) -->
+  <input type="text" id="search" placeholder="Type at least 3 characters…" disabled />
+
+  <!-- Search Results Card (static mockup) -->
+  <div id="search-results">
+    <h2>Search Results</h2>
+
+    <!-- “Events at Clark College” Section -->
+    <h3>Events at Clark College</h3>
+    <p class="no-results">No events scheduled.</p>
+
+    <!-- “Employee Training and Development Events” Section -->
+    <h3>Employee Training and Development Events</h3>
+    <ul class="search-event-list">
+      <li>
+        <span class="search-event-time">Fri, Jun 6 12:00 PM</span>
+        <div class="search-event-title-wrap">
+          <a href="#">PPI: Trans 101</a>
+          <button class="info-icon" aria-label="More information about this event">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          </button>
+        </div>
+        <!-- Popup (initially hidden) -->
+        <div class="event-popup">
+          <button class="popup-close" aria-label="Close popup">&times;</button>
+          <div><strong>PPI: Trans 101</strong></div>
+          <div>Details: Join us for an introduction to Trans 101. …</div>
+        </div>
+      </li>
+      <li>
+        <span class="search-event-time">Sun, Jun 8 06:00 PM</span>
+        <div class="search-event-title-wrap">
+          <a href="#">PPI: Recognizing Microaggressions</a>
+          <button class="info-icon" aria-label="More information about this event">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="event-popup">
+          <button class="popup-close" aria-label="Close popup">&times;</button>
+          <div><strong>PPI: Recognizing Microaggressions</strong></div>
+          <div>Details: An exploration of Microaggressions. …</div>
+        </div>
+      </li>
+      <li>
+        <span class="search-event-time">Thu, Jun 12 06:00 AM</span>
+        <div class="search-event-title-wrap">
+          <a href="#">PPI: Understanding Intersectionality</a>
+          <button class="info-icon" aria-label="More information about this event">
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="event-popup">
+          <button class="popup-close" aria-label="Close popup">&times;</button>
+          <div><strong>PPI: Understanding Intersectionality</strong></div>
+          <div>Details: Learn about intersectionality. …</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    // (For this mockup, we disable actual JS.  In your real page, you'd attach events exactly
+    // as in your search.js—clicking the .info-icon toggles .visible on the .event-popup above.)
+    const icons = document.querySelectorAll(".info-icon");
+    icons.forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const popup = btn.closest("li").querySelector(".event-popup");
+        const isOpen = popup.classList.contains("visible");
+        document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
+        document.querySelectorAll(".info-icon").forEach(i => i.classList.remove("active"));
+        if (!isOpen) {
+          btn.classList.add("active");
+          popup.classList.add("visible");
+          requestAnimationFrame(() => {
+            const rect = popup.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            if (spaceBelow < 100 && spaceAbove > rect.height + 20) {
+              popup.classList.add("above");
+            } else {
+              popup.classList.remove("above");
+            }
+          });
+        }
+      });
+    });
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
+      document.querySelectorAll(".info-icon").forEach(i => i.classList.remove("active"));
+    });
+  </script>
+</body>
+</html>
