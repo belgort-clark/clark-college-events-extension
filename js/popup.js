@@ -8,7 +8,7 @@ fetch(messagesUrl)
     return response.json();
   })
   .then(data => {
-    if (data.message !== "") {
+    if (data.message) {
       messages.innerHTML = data.message;
       messages.style.display = 'block';
     }
@@ -23,33 +23,31 @@ function renderTodayDate() {
   const heading = document.querySelector('#event-date');
   heading.innerHTML = 'Clark College Events <br>' + now.toLocaleDateString(undefined, {
     weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
+    month:   'long',
+    day:     'numeric',
+    year:    'numeric'
   });
 }
 
+// Get Pacific‐time “now”
 function getPacificNow() {
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
     hour12: false,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit"
   });
   return new Date(formatter.format(new Date()));
 }
 
+// Format H:MM or “All Day”
 function formatEventTime(date) {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  if (hours === 0 && minutes === 0) return "All Day";
+  const h = date.getHours(), m = date.getMinutes();
+  if (h === 0 && m === 0) return "All Day";
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+// Fetch & parse RSS
 function fetchRssFeed(url, replacementBaseUrl) {
   return fetch(url)
     .then(response => response.text())
@@ -58,219 +56,238 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
 
-      const nowPacific = getPacificNow();
-      const today = new Date(nowPacific.getFullYear(), nowPacific.getMonth(), nowPacific.getDate());
+      const nowPT    = getPacificNow();
+      const today    = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
       const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const normalizedTomorrow = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+      tomorrow.setDate(today.getDate() + 1);
+      const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
       const todayUpcomingEvents = [];
-      const todayEarlierEvents = [];
-      const tomorrowEvents = [];
+      const todayEarlierEvents  = [];
+      const tomorrowEvents      = [];
 
-      const sortedItems = Array.from(items).sort((a, b) => {
-        const dateA = new Date(a.querySelector("pubDate")?.textContent || 0);
-        const dateB = new Date(b.querySelector("pubDate")?.textContent || 0);
-        return dateA - dateB;
-      });
+      Array.from(items)
+        .sort((a, b) => 
+          new Date(a.querySelector("pubDate")?.textContent || 0) - 
+          new Date(b.querySelector("pubDate")?.textContent || 0)
+        )
+        .forEach(item => {
+          const title      = item.querySelector("title")?.textContent || "";
+          const pubDateStr = item.querySelector("pubDate")?.textContent || "";
+          const eventDate  = new Date(pubDateStr);
+          const eventDay   = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
-      sortedItems.forEach((item) => {
-        const title = item.querySelector("title")?.textContent;
-        const pubDate = item.querySelector("pubDate")?.textContent;
-        const rawDescription = item.querySelector("description")?.textContent || "";
-        const description = rawDescription
-          .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
-          .replace(/(<br\s*\/?>\s*)+$/gi, '');
-
-        const eventDate = new Date(pubDate);
-        const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-
-        let originalLink = item.querySelector("link")?.textContent;
-        let newLink = "";
-        try {
-          const originalUrl = new URL(originalLink);
-          newLink = replacementBaseUrl + originalUrl.search;
-        } catch (e) {
-          console.warn("Invalid URL in feed:", originalLink);
-          newLink = originalLink;
-        }
-
-        const isAllDay = eventDate.getHours() === 0 && eventDate.getMinutes() === 0;
-        const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
-        const isPast = !isAllDay && oneHourAfter.getTime() < nowPacific.getTime();
-
-        const eventObj = {
-          title,
-          timeStr: formatEventTime(eventDate),
-          link: newLink,
-          isPast,
-          description
-        };
-
-        if (eventDay.getTime() === today.getTime()) {
-          if (isPast) {
-            todayEarlierEvents.push(eventObj);
-          } else {
-            todayUpcomingEvents.push(eventObj);
+          // build link
+          let originalLink = item.querySelector("link")?.textContent || "";
+          let newLink      = originalLink;
+          try {
+            const u = new URL(originalLink);
+            newLink = replacementBaseUrl + u.search;
+          } catch {
+            console.warn("Invalid URL in feed:", originalLink);
           }
-        } else if (eventDay.getTime() === normalizedTomorrow.getTime()) {
-          tomorrowEvents.push(eventObj);
-        }
-      });
 
-      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, fetchedAt: nowPacific };
+          // clean description
+          let rawDesc = item.querySelector("description")?.textContent || "";
+          const description = rawDesc
+            .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
+            .replace(/(<br\s*\/?>\s*)+$/gi, '');
+
+          // determine past
+          const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
+          const isPast = 
+            !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
+            oneHourAfter < nowPT;
+
+          // NEW: soon if within [-60min, +30min] window
+          const nowMs   = nowPT.getTime();
+          const startMs = eventDate.getTime();
+          const past60  = nowMs - 60 * 60 * 1000;
+          const next30  = nowMs + 30 * 60 * 1000;
+          const isSoon  = startMs >= past60 && startMs <= next30;
+
+          const ev = {
+            title,
+            date:       eventDate,
+            timeStr:    formatEventTime(eventDate),
+            link:       newLink,
+            isPast,
+            isSoon,
+            description
+          };
+
+          if (eventDay.getTime() === today.getTime()) {
+            if (isPast) todayEarlierEvents.push(ev);
+            else        todayUpcomingEvents.push(ev);
+          } else if (eventDay.getTime() === normTom.getTime()) {
+            tomorrowEvents.push(ev);
+          }
+        });
+
+      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents };
     });
 }
 
+// Render sections
 function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl) {
-  const section = document.createElement("section");
-  const heading = document.createElement("h2");
-  const headingLink = document.createElement("a");
-  headingLink.href = sectionLinkUrl;
-  headingLink.target = "_blank";
-  headingLink.rel = "noopener noreferrer";
-  headingLink.textContent = sectionTitle;
-  heading.appendChild(headingLink);
-  section.appendChild(heading);
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
+  const section = document.createElement("section");
+  section.classList.add("event-section");
+
+  // header
+  const h2 = document.createElement("h2");
+  const a  = document.createElement("a");
+  a.href        = sectionLinkUrl;
+  a.target      = "_blank";
+  a.rel         = "noopener noreferrer";
+  a.textContent = sectionTitle;
+  h2.appendChild(a);
+  section.appendChild(h2);
+
+  // intro
   if (descriptionText) {
-    const intro = document.createElement("p");
-    intro.innerHTML = descriptionText;
-    section.appendChild(intro);
+    const p = document.createElement("p");
+    p.innerHTML = descriptionText;
+    section.appendChild(p);
   }
 
-  function renderEventList(title, events) {
-    const shouldRenderEmpty = (title === "Today" || title === "Tomorrow");
-    if (events.length === 0 && !shouldRenderEmpty) return;
+  // sub‐lists
+  function renderList(label, events, allowEmpty) {
+    if (!events.length && !allowEmpty) return;
+    const h3 = document.createElement("h3");
+    h3.textContent = label;
+    section.appendChild(h3);
 
-    const subheading = document.createElement("h3");
-    subheading.textContent = title;
-    section.appendChild(subheading);
-
-    if (events.length === 0) {
-      const message = document.createElement("p");
-      message.textContent = 'No scheduled events.';
-      section.appendChild(message);
+    if (!events.length) {
+      const msg = document.createElement("p");
+      msg.textContent = "No scheduled events";
+      section.appendChild(msg);
       return;
     }
 
     const ul = document.createElement("ul");
-    events.forEach(event => {
+    events.forEach(ev => {
       const li = document.createElement("li");
 
-      const timeSpan = document.createElement("span");
-      timeSpan.className = "event-time";
-      timeSpan.textContent = event.timeStr;
+      // apply pulse if within window
+      if (ev.isSoon) {
+        li.classList.add("upcoming-soon");
+        li.dataset.startTime = ev.date.getTime();
+      }
 
-      const link = document.createElement("a");
-      link.href = event.link;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = event.title;
-      if (event.isPast) link.classList.add("event-past");
+      const ts = document.createElement("span");
+      ts.className   = "event-time";
+      ts.textContent = ev.timeStr;
 
-      const infoButton = document.createElement("button");
-      infoButton.className = "info-icon";
-      infoButton.setAttribute("aria-label", "More information about this event");
-      infoButton.setAttribute("tabindex", "0");
-      infoButton.setAttribute("role", "button");
-      infoButton.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
+      const linkEl = document.createElement("a");
+      linkEl.href        = ev.link;
+      linkEl.target      = "_blank";
+      linkEl.rel         = "noopener noreferrer";
+      linkEl.textContent = ev.title;
+      if (ev.isPast) linkEl.classList.add("event-past");
+
+      const btn = document.createElement("button");
+      btn.className = "info-icon";
+      btn.setAttribute("aria-label", "More information");
+      btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
 
       const popup = document.createElement("div");
       popup.className = "event-popup";
       popup.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div></div>
-          <button class="popup-close" aria-label="Close popup" style="border: none; background: none; font-size: 1.2em; cursor: pointer;">&times;</button>
+        <div class="popup-header">
+          <button class="popup-close" aria-label="Close popup">&times;</button>
         </div>
-        <div><strong>${event.title}</strong></div>
-        <div>${event.description}</div>
+        <div><strong>${ev.title}</strong></div>
+        <div>${ev.description}</div>
       `;
-
       popup.querySelector(".popup-close").addEventListener("click", () => {
-        popup.classList.remove("visible");
-        infoButton.classList.remove("active");
+        popup.classList.remove("visible", "above");
+        btn.classList.remove("active");
       });
 
-      infoButton.addEventListener("click", (e) => {
+      btn.addEventListener("click", e => {
         e.stopPropagation();
-        const isOpen = popup.classList.contains("visible");
-        document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
-        document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
-        if (!isOpen) {
-          infoButton.classList.add("active");
+        const open = popup.classList.contains("visible");
+        document.querySelectorAll(".event-popup")
+                .forEach(p => p.classList.remove("visible", "above"));
+        document.querySelectorAll(".info-icon")
+                .forEach(ic => ic.classList.remove("active"));
+        if (!open) {
+          btn.classList.add("active");
           popup.classList.add("visible");
           requestAnimationFrame(() => {
-            const rect = popup.getBoundingClientRect();
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const spaceAbove = rect.top;
-            if (spaceBelow < 100 && spaceAbove > rect.height + 20) {
+            const r = popup.getBoundingClientRect();
+            if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
               popup.classList.add("above");
-            } else {
-              popup.classList.remove("above");
             }
           });
         }
       });
 
-      li.appendChild(timeSpan);
-      li.appendChild(link);
-      li.appendChild(infoButton);
-      li.appendChild(popup);
+      li.append(ts, linkEl, btn, popup);
       ul.appendChild(li);
     });
-
     section.appendChild(ul);
   }
 
-  renderEventList("Today", data.todayUpcomingEvents);
-  renderEventList("Earlier Today", data.todayEarlierEvents);
-  renderEventList("Tomorrow", data.tomorrowEvents);
+  renderList("Today",         data.todayUpcomingEvents,  true);
+  renderList("Earlier Today", data.todayEarlierEvents,   false);
+  renderList("Tomorrow",      data.tomorrowEvents,       true);
 
-  const container = document.getElementById(containerId);
-  if (container) {
-    section.classList.add("event-section");
-    container.appendChild(section);
-  } else {
-    console.warn(`Container with ID "${containerId}" not found.`);
-  }
+  container.appendChild(section);
+  container.style.display = "block";
 }
 
+// remove pulse exactly 60min after start-time
+setInterval(() => {
+  document.querySelectorAll(".upcoming-soon").forEach(li => {
+    const start = Number(li.dataset.startTime);
+    if (Date.now() >= start + 60*60*1000) {
+      li.classList.remove("upcoming-soon");
+    }
+  });
+}, 60*1000);
+
+// Initialize
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
-  const loadingMessage = document.getElementById("loading-message");
+  const loading = document.getElementById("loading-message");
+
   Promise.all([
     fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
-      'https://www.clark.edu/about/calendars/events.php'
+      "test.rss",
+      "https://www.clark.edu/about/calendars/events.php"
     ),
     fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
-      'https://www.clark.edu/tlc/main-schedule.php'
+      "https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss",
+      "https://www.clark.edu/tlc/main-schedule.php"
     )
-  ]).then(([generalData, trainingData]) => {
+  ])
+  .then(([gen, train]) => {
     renderEventSection(
-      'general-events',
-      'Events at Clark College',
-      'Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.',
-      generalData,
-      'https://www.clark.edu/about/calendars/events.php'
+      "general-events",
+      "Events at Clark College",
+      "Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.",
+      gen,
+      "https://www.clark.edu/about/calendars/events.php"
     );
-
     renderEventSection(
-      'training-events',
-      'Employee Training and Development Events',
-      'These events are part of Clark College\'s Employee Training and Development programs happening today and tomorrow.',
-      trainingData,
-      'https://www.clark.edu/tlc/main-schedule.php'
+      "training-events",
+      "Employee Training and Development Events",
+      "These events are part of Clark College’s Employee Training and Development programs happening today and tomorrow.",
+      train,
+      "https://www.clark.edu/tlc/main-schedule.php"
     );
-  }).finally(() => {
-    if (loadingMessage) loadingMessage.style.display = 'none';
-    document.getElementById("general-events").style.display = "block";
-    document.getElementById("training-events").style.display = "block";
+  })
+  .finally(() => {
+    if (loading) loading.style.display = "none";
     document.addEventListener("click", () => {
-      document.querySelectorAll(".event-popup").forEach(p => p.classList.remove("visible", "above"));
-      document.querySelectorAll(".info-icon").forEach(icon => icon.classList.remove("active"));
+      document.querySelectorAll(".event-popup")
+              .forEach(p => p.classList.remove("visible", "above"));
+      document.querySelectorAll(".info-icon")
+              .forEach(ic => ic.classList.remove("active"));
     });
   });
 });
