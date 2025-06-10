@@ -256,13 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const loading = document.getElementById("loading-message");
 
   Promise.all([
+    // fetchRssFeed(
+    //   "test.rss",
+    //   "https://www.clark.edu/about/calendars/events.php"
+    // ),
     fetchRssFeed(
-      "test.rss",
-      "https://www.clark.edu/about/calendars/events.php"
+      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
+      'https://www.clark.edu/about/calendars/events.php'
     ),
     fetchRssFeed(
-      "https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss",
-      "https://www.clark.edu/tlc/main-schedule.php"
+      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
+      'https://www.clark.edu/tlc/main-schedule.php'
     )
   ])
   .then(([gen, train]) => {
