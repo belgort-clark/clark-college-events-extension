@@ -23,9 +23,9 @@ function renderTodayDate() {
   const heading = document.querySelector('#event-date');
   heading.innerHTML = 'Clark College Events <br>' + now.toLocaleDateString(undefined, {
     weekday: 'long',
-    month:   'long',
-    day:     'numeric',
-    year:    'numeric'
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
   });
 }
 
@@ -56,30 +56,30 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
 
-      const nowPT    = getPacificNow();
-      const today    = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
+      const nowPT = getPacificNow();
+      const today = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
       const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
       const todayUpcomingEvents = [];
-      const todayEarlierEvents  = [];
-      const tomorrowEvents      = [];
+      const todayEarlierEvents = [];
+      const tomorrowEvents = [];
 
       Array.from(items)
-        .sort((a, b) => 
-          new Date(a.querySelector("pubDate")?.textContent || 0) - 
+        .sort((a, b) =>
+          new Date(a.querySelector("pubDate")?.textContent || 0) -
           new Date(b.querySelector("pubDate")?.textContent || 0)
         )
         .forEach(item => {
-          const title      = item.querySelector("title")?.textContent || "";
+          const title = item.querySelector("title")?.textContent || "";
           const pubDateStr = item.querySelector("pubDate")?.textContent || "";
-          const eventDate  = new Date(pubDateStr);
-          const eventDay   = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+          const eventDate = new Date(pubDateStr);
+          const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
           // build link
           let originalLink = item.querySelector("link")?.textContent || "";
-          let newLink      = originalLink;
+          let newLink = originalLink;
           try {
             const u = new URL(originalLink);
             newLink = replacementBaseUrl + u.search;
@@ -95,30 +95,32 @@ function fetchRssFeed(url, replacementBaseUrl) {
 
           // determine past
           const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
-          const isPast = 
+          const isPast =
             !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
             oneHourAfter < nowPT;
 
           // NEW: soon if within [-60min, +30min] window
-          const nowMs   = nowPT.getTime();
+          const nowMs = nowPT.getTime();
           const startMs = eventDate.getTime();
-          const past60  = nowMs - 60 * 60 * 1000;
-          const next30  = nowMs + 30 * 60 * 1000;
-          const isSoon  = startMs >= past60 && startMs <= next30;
+          const past60 = nowMs - 60 * 60 * 1000;
+          const next30 = nowMs + 30 * 60 * 1000;
+          const isSoon = startMs >= past60 && startMs <= next30;
+          const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
 
           const ev = {
             title,
-            date:       eventDate,
-            timeStr:    formatEventTime(eventDate),
-            link:       newLink,
+            date: eventDate,
+            timeStr: formatEventTime(eventDate),
+            link: newLink,
             isPast,
             isSoon,
+            isInProgress,
             description
           };
 
           if (eventDay.getTime() === today.getTime()) {
             if (isPast) todayEarlierEvents.push(ev);
-            else        todayUpcomingEvents.push(ev);
+            else todayUpcomingEvents.push(ev);
           } else if (eventDay.getTime() === normTom.getTime()) {
             tomorrowEvents.push(ev);
           }
@@ -138,10 +140,10 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
   // header
   const h2 = document.createElement("h2");
-  const a  = document.createElement("a");
-  a.href        = sectionLinkUrl;
-  a.target      = "_blank";
-  a.rel         = "noopener noreferrer";
+  const a = document.createElement("a");
+  a.href = sectionLinkUrl;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
   a.textContent = sectionTitle;
   h2.appendChild(a);
   section.appendChild(h2);
@@ -177,14 +179,19 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
         li.dataset.startTime = ev.date.getTime();
       }
 
+      // NEW: add class if event is in progress
+      if (ev.isInProgress) {
+        li.classList.add("event-in-progress");
+      }
+
       const ts = document.createElement("span");
-      ts.className   = "event-time";
+      ts.className = "event-time";
       ts.textContent = ev.timeStr;
 
       const linkEl = document.createElement("a");
-      linkEl.href        = ev.link;
-      linkEl.target      = "_blank";
-      linkEl.rel         = "noopener noreferrer";
+      linkEl.href = ev.link;
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
       linkEl.textContent = ev.title;
       if (ev.isPast) linkEl.classList.add("event-past");
 
@@ -211,9 +218,9 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
         e.stopPropagation();
         const open = popup.classList.contains("visible");
         document.querySelectorAll(".event-popup")
-                .forEach(p => p.classList.remove("visible", "above"));
+          .forEach(p => p.classList.remove("visible", "above"));
         document.querySelectorAll(".info-icon")
-                .forEach(ic => ic.classList.remove("active"));
+          .forEach(ic => ic.classList.remove("active"));
         if (!open) {
           btn.classList.add("active");
           popup.classList.add("visible");
@@ -232,9 +239,9 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     section.appendChild(ul);
   }
 
-  renderList("Today",         data.todayUpcomingEvents,  true);
-  renderList("Earlier Today", data.todayEarlierEvents,   false);
-  renderList("Tomorrow",      data.tomorrowEvents,       true);
+  renderList("Today", data.todayUpcomingEvents, true);
+  renderList("Earlier Today", data.todayEarlierEvents, false);
+  renderList("Tomorrow", data.tomorrowEvents, true);
 
   container.appendChild(section);
   container.style.display = "block";
@@ -244,11 +251,11 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 setInterval(() => {
   document.querySelectorAll(".upcoming-soon").forEach(li => {
     const start = Number(li.dataset.startTime);
-    if (Date.now() >= start + 60*60*1000) {
+    if (Date.now() >= start + 60 * 60 * 1000) {
       li.classList.remove("upcoming-soon");
     }
   });
-}, 60*1000);
+}, 60 * 1000);
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
@@ -269,29 +276,29 @@ document.addEventListener("DOMContentLoaded", () => {
       'https://www.clark.edu/tlc/main-schedule.php'
     )
   ])
-  .then(([gen, train]) => {
-    renderEventSection(
-      "general-events",
-      "Events at Clark College",
-      "Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.",
-      gen,
-      "https://www.clark.edu/about/calendars/events.php"
-    );
-    renderEventSection(
-      "training-events",
-      "Employee Training and Development Events",
-      "These events are part of Clark College’s Employee Training and Development programs happening today and tomorrow.",
-      train,
-      "https://www.clark.edu/tlc/main-schedule.php"
-    );
-  })
-  .finally(() => {
-    if (loading) loading.style.display = "none";
-    document.addEventListener("click", () => {
-      document.querySelectorAll(".event-popup")
-              .forEach(p => p.classList.remove("visible", "above"));
-      document.querySelectorAll(".info-icon")
-              .forEach(ic => ic.classList.remove("active"));
+    .then(([gen, train]) => {
+      renderEventSection(
+        "general-events",
+        "Events at Clark College",
+        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.",
+        gen,
+        "https://www.clark.edu/about/calendars/events.php"
+      );
+      renderEventSection(
+        "training-events",
+        "Employee Training and Development Events",
+        "These events are part of Clark College’s Employee Training and Development programs happening today and tomorrow.",
+        train,
+        "https://www.clark.edu/tlc/main-schedule.php"
+      );
+    })
+    .finally(() => {
+      if (loading) loading.style.display = "none";
+      document.addEventListener("click", () => {
+        document.querySelectorAll(".event-popup")
+          .forEach(p => p.classList.remove("visible", "above"));
+        document.querySelectorAll(".info-icon")
+          .forEach(ic => ic.classList.remove("active"));
+      });
     });
-  });
 });

@@ -353,7 +353,7 @@ nav ul li a:focus {
     }
 
     50% {
-        box-shadow: 0 0 8px rgba(78, 135, 160, 0.6);
+        box-shadow: 0 0 6px rgba(255, 162, 0, 0.6);
     }
 
     100% {
@@ -363,5 +363,27 @@ nav ul li a:focus {
 
 /* ── Highlight any <li class="upcoming-soon"> ── */
 .upcoming-soon {
-    animation: pulse 4s ease-in-out infinite;
+    animation: pulse 3s ease-in-out infinite;
+    border-radius: 6px;
+    background-color: rgba(255, 162, 0, 0.1);
+}
+
+.event-in-progress {
+    animation: inprogress-pulse 3s ease-in-out infinite;
+    border-radius: 6px;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+@keyframes inprogress-pulse {
+    0% {
+        box-shadow: 0 0 0 rgba(40, 167, 69, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+    }
+
+    100% {
+        box-shadow: 0 0 0 rgba(40, 167, 69, 0);
+    }
 }
