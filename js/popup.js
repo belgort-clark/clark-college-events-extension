@@ -1,3 +1,21 @@
+function isRunningAsChromeExtension() {
+  return typeof chrome !== "undefined" &&
+    typeof chrome.runtime !== "undefined" &&
+    typeof chrome.runtime.id !== "undefined";
+}
+
+if (!isRunningAsChromeExtension()) {
+  document.body.style.width = '100%';
+  document.body.style.margin = 0;
+  document.querySelector('nav ul').style.display = 'block';
+  document.querySelectorAll('nav ul li').forEach(item => {
+    item.style.display = 'block';
+  })
+  document.querySelectorAll('.navicon').forEach(icon => {
+    icon.style.display = 'none';
+  })
+}
+
 // Show messages from GitHub
 const messages = document.querySelector("#messages");
 const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";
