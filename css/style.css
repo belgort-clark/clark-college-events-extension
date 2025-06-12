@@ -346,6 +346,12 @@ nav ul li a:focus {
     text-underline-offset: 6px;
 }
 
+#active-page {
+    text-decoration: underline;
+    text-decoration-color: #6bbbae;
+    text-underline-offset: 6px;
+}
+
 /* ── Pulse animation ── */
 @keyframes pulse {
     0% {
