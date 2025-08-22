@@ -1,3 +1,5 @@
+
+
 // Show messages from GitHub
 const messages = document.querySelector("#messages");
 const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";

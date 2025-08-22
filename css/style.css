@@ -58,6 +58,7 @@ h2 a:active {
 /* ========== Containers & Layout ========== */
 #container {
     padding: 14px;
+    padding-bottom: 48px;
 }
 
 footer {
@@ -316,6 +317,11 @@ a.event-past {
 }
 
 /* ========== Navigation ========== */
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 nav ul {
     margin-left: 0;
     display: flex;
