@@ -1,3 +1,12 @@
+.loading-text {
+    font-size: 1em;
+    font-weight: normal;
+    color: #222;
+    vertical-align: middle;
+    margin-left: 6px;
+    display: inline-block;
+}
+
 /* ========== Base Styles ========== */
 body {
     background: #fafafa;
@@ -150,9 +159,22 @@ li a {
     border: none;
 }
 
-#loading-message {
-    color: #555;
-    margin-top: 20px;
+
+
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 4px solid #d0d6e1;
+    border-top: 4px solid #535486;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* ========== Event Styling ========== */

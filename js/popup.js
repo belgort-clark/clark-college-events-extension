@@ -1,3 +1,4 @@
+console.log("DEBUG: popup.js loaded");
 
 
 // Show messages from GitHub
@@ -51,9 +52,19 @@ function formatEventTime(date) {
 
 // Fetch & parse RSS
 function fetchRssFeed(url, replacementBaseUrl) {
+  const loadingMessage = document.getElementById('loading-message');
+  let loadingTimeout;
+  // Hide overlay by default
+  loadingMessage.classList.remove('show');
+  // Show overlay if loading takes longer than 2s
+  loadingTimeout = setTimeout(() => {
+    loadingMessage.classList.add('show');
+  }, 2000);
   return fetch(url)
     .then(response => response.text())
     .then(text => {
+      clearTimeout(loadingTimeout);
+      loadingMessage.classList.remove('show');
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, "text/xml");
       const items = xmlDoc.querySelectorAll("item");
@@ -64,17 +75,16 @@ function fetchRssFeed(url, replacementBaseUrl) {
       tomorrow.setDate(today.getDate() + 1);
       const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
+
   const todayUpcomingEvents = [];
   const todayEarlierEvents = [];
   const tomorrowEvents = [];
-  const futureEvents = [];
+  const upcomingEvents = [];
 
-  // Calculate the end of the current week (upcoming Sunday at 23:59:59)
-  const weekEnd = new Date(today);
-  const dayOfWeek = weekEnd.getDay(); // 0 = Sunday, 6 = Saturday
-  const daysUntilSunday = 7 - dayOfWeek;
-  weekEnd.setDate(today.getDate() + daysUntilSunday);
-  weekEnd.setHours(23, 59, 59, 999);
+  // Calculate the end of the 10-day rolling window
+  const rollingEnd = new Date(today);
+  rollingEnd.setDate(today.getDate() + 10);
+  rollingEnd.setHours(23, 59, 59, 999);
 
       Array.from(items)
         .sort((a, b) =>
@@ -99,9 +109,11 @@ function fetchRssFeed(url, replacementBaseUrl) {
 
           // clean description
           let rawDesc = item.querySelector("description")?.textContent || "";
-          const description = rawDesc
+          let description = rawDesc
             .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
             .replace(/(<br\s*\/?>\s*)+$/gi, '');
+          // Remove <br> that immediately follows a </p>
+          description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
 
           // determine past
           const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
@@ -133,12 +145,12 @@ function fetchRssFeed(url, replacementBaseUrl) {
             else todayUpcomingEvents.push(ev);
           } else if (eventDay.getTime() === normTom.getTime()) {
             tomorrowEvents.push(ev);
-          } else if (eventDay.getTime() > normTom.getTime() && eventDay.getTime() <= weekEnd.getTime()) {
-            futureEvents.push(ev);
+          } else if (eventDay.getTime() > normTom.getTime() && eventDay.getTime() <= rollingEnd.getTime()) {
+            upcomingEvents.push(ev);
           }
         });
 
-      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, futureEvents };
+  return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, upcomingEvents };
     });
 }
 
@@ -183,8 +195,8 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
     const ul = document.createElement("ul");
 
-  // For 'Later This Week', group by day and show day name
-  if (label === "Later This Week") {
+  // For 'Upcoming Events (next 14 days)', group by day and show day name
+  if (label.startsWith("Upcoming Events")) {
       // Group events by day
       const byDay = {};
       events.forEach(ev => {
@@ -231,9 +243,11 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
             <div><strong>${ev.title}</strong></div>
             <div>${ev.description}</div>
           `;
-          popup.querySelector(".popup-close").addEventListener("click", () => {
+          const closeBtn = popup.querySelector(".popup-close");
+          closeBtn.addEventListener("click", () => {
             popup.classList.remove("visible", "above");
             btn.classList.remove("active");
+            btn.focus();
           });
           btn.addEventListener("click", e => {
             e.stopPropagation();
@@ -245,12 +259,38 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
             if (!open) {
               btn.classList.add("active");
               popup.classList.add("visible");
-              requestAnimationFrame(() => {
-                const r = popup.getBoundingClientRect();
-                if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
-                  popup.classList.add("above");
+              // Focus trap: focus close button
+              setTimeout(() => {
+                closeBtn.focus();
+              }, 0);
+              // Trap focus inside popup and close on Escape
+              const trap = function(ev) {
+                if (ev.key === "Escape") {
+                  popup.classList.remove("visible", "above");
+                  btn.classList.remove("active");
+                  btn.focus();
+                  document.removeEventListener("keydown", trap);
+                  return;
                 }
-              });
+                if (ev.key === "Tab") {
+                  const focusables = popup.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                  if (!focusables.length) return;
+                  const first = focusables[0];
+                  const last = focusables[focusables.length - 1];
+                  if (ev.shiftKey) {
+                    if (document.activeElement === first) {
+                      last.focus();
+                      ev.preventDefault();
+                    }
+                  } else {
+                    if (document.activeElement === last) {
+                      first.focus();
+                      ev.preventDefault();
+                    }
+                  }
+                }
+              };
+              document.addEventListener("keydown", trap);
             }
           });
           li.append(ts, linkEl, btn, popup);
@@ -323,7 +363,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   renderList("Earlier Today", data.todayEarlierEvents, false);
   renderList("Tomorrow", data.tomorrowEvents, true);
   if (showFuture) {
-    renderList("Later This Week", data.futureEvents, true);
+    renderList("Upcoming Events (next 10 days)", data.upcomingEvents, true);
   }
 
   container.appendChild(section);
@@ -343,47 +383,58 @@ setInterval(() => {
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
-  const loading = document.getElementById("loading-message");
-
-  Promise.all([
-    // fetchRssFeed(
-    //   "test.rss",
-    //   "https://www.clark.edu/about/calendars/events.php"
-    // ),
-    fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
-      'https://www.clark.edu/about/calendars/events.php'
-    ),
-    fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
-      'https://www.clark.edu/tlc/main-schedule.php'
-    )
-  ])
-    .then(([gen, train]) => {
-      renderEventSection(
-        "general-events",
-        "Events at Clark College",
-        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
-        gen,
-        "https://www.clark.edu/about/calendars/events.php",
-        true
-      );
-      renderEventSection(
-        "training-events",
-        "Employee Training and Development Events",
-        "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
-        train,
-        "https://www.clark.edu/tlc/main-schedule.php",
-        true
-      );
-    })
-    .finally(() => {
-      if (loading) loading.style.display = "none";
-      document.addEventListener("click", () => {
-        document.querySelectorAll(".event-popup")
-          .forEach(p => p.classList.remove("visible", "above"));
-        document.querySelectorAll(".info-icon")
-          .forEach(ic => ic.classList.remove("active"));
+  const loadingMessages = document.querySelectorAll("#loading-message");
+  const loading = loadingMessages[loadingMessages.length - 1];
+  let showLoadingTimeout = null;
+    Promise.all([
+      fetchRssFeed(
+        'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
+        'https://www.clark.edu/about/calendars/events.php'
+      ),
+      fetchRssFeed(
+        'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
+        'https://www.clark.edu/tlc/main-schedule.php'
+      )
+    ])
+      .then(([gen, train]) => {
+        renderEventSection(
+          "general-events",
+          "Events at Clark College",
+          "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
+          gen,
+          "https://www.clark.edu/about/calendars/events.php",
+          true
+        );
+        renderEventSection(
+          "training-events",
+          "Employee Training and Development Events",
+          "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
+          train,
+          "https://www.clark.edu/tlc/main-schedule.php",
+          true
+        );
+      })
+      .finally(() => {
+        if (showLoadingTimeout) {
+          clearTimeout(showLoadingTimeout);
+          showLoadingTimeout = null;
+        }
+        if (loading) {
+          loading.classList.remove('show');
+        }
+        const main = document.getElementById('main-content');
+        if (main) main.style.opacity = 1;
+        document.addEventListener("click", () => {
+          document.querySelectorAll(".event-popup")
+            .forEach(p => p.classList.remove("visible", "above"));
+          document.querySelectorAll(".info-icon")
+            .forEach(ic => ic.classList.remove("active"));
+        });
       });
-    });
+  // Show the loading overlay only if loading takes longer than 2 seconds
+  showLoadingTimeout = setTimeout(() => {
+    if (loading) {
+      loading.classList.add('show');
+    }
+  }, 2000);
 });

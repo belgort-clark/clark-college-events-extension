@@ -12,6 +12,7 @@
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/loading-overlay.css">
     <title>Home - Clark College Events</title>
 </head>
 
@@ -25,9 +26,9 @@
             </h1>
         </header>
 
-        <nav>
+        <nav role="navigation" aria-label="Main navigation">
             <ul>
-                <li><a href="popup.html" id="active-page">🏡 Home</a></li>
+                <li><a href="popup.html" id="active-page" aria-current="page">🏡 Home</a></li>
                 <li><a href="search.html">🔍 Search Events</a></li>
                 <li><a href="help.html">🛟 Help & FAQ</a></li>
                 <li><a href="about.html">ℹ️ About</a></li>
@@ -35,12 +36,15 @@
             </ul>
         </nav>
 
-        <main>
-            <div id="messages" role="alert"></div>
-            <div id="loading-message">Loading events...</div>
-            <div id="general-events"></div>
-            <div id="training-events"></div>
-        </main>
+    <main role="main" id="main-content" style="opacity:0; transition: opacity 0.4s; position:relative;">
+    <div id="messages" role="alert"></div>
+    <div id="general-events"></div>
+    <div id="training-events"></div>
+    </main>
+    <div id="loading-message" role="status" aria-live="polite">
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <span class="loading-text">Getting data from 25Live...</span>
+    </div>
     </div>
     <script src="js/popup.js"></script>
 </body>

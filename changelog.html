@@ -39,9 +39,11 @@
         <main>
             <h2>Version 1.4.7</h2>
             <ul class="changelog">
-                <li>Events are now grouped as Today, Tomorrow, and <strong>Later This Week</strong> for both student and employee training events</li>
-                <li>"Later This Week" events are grouped by day and only show events through the upcoming Sunday (end of the current week)</li>
-                <li>Improved date formatting for clarity</li>
+                <li>Events are now grouped as Today, Tomorrow, and <strong>Upcoming Events (next 10 days)</strong> for both student and employee training events</li>
+                <li>"Upcoming Events" uses a 10-day rolling window and groups events by day with clear date headings</li>
+                <li>Improved date grouping and formatting for clarity</li>
+                <li>Accessibility: navigation uses ARIA roles and <code>aria-current</code>, <code>role="main"</code> added, and popups now trap focus and close with Escape key</li>
+                <li>Popup formatting: removed unnecessary <code>&lt;br&gt;</code> tags after <code>&lt;/p&gt;</code> in event descriptions</li>
             </ul>
             <h2>Version 1.4.6</h2>
             <ul class="changelog">
