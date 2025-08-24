@@ -64,9 +64,17 @@ function fetchRssFeed(url, replacementBaseUrl) {
       tomorrow.setDate(today.getDate() + 1);
       const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
-      const todayUpcomingEvents = [];
-      const todayEarlierEvents = [];
-      const tomorrowEvents = [];
+  const todayUpcomingEvents = [];
+  const todayEarlierEvents = [];
+  const tomorrowEvents = [];
+  const futureEvents = [];
+
+  // Calculate the end of the current week (upcoming Sunday at 23:59:59)
+  const weekEnd = new Date(today);
+  const dayOfWeek = weekEnd.getDay(); // 0 = Sunday, 6 = Saturday
+  const daysUntilSunday = 7 - dayOfWeek;
+  weekEnd.setDate(today.getDate() + daysUntilSunday);
+  weekEnd.setHours(23, 59, 59, 999);
 
       Array.from(items)
         .sort((a, b) =>
@@ -125,15 +133,17 @@ function fetchRssFeed(url, replacementBaseUrl) {
             else todayUpcomingEvents.push(ev);
           } else if (eventDay.getTime() === normTom.getTime()) {
             tomorrowEvents.push(ev);
+          } else if (eventDay.getTime() > normTom.getTime() && eventDay.getTime() <= weekEnd.getTime()) {
+            futureEvents.push(ev);
           }
         });
 
-      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents };
+      return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, futureEvents };
     });
 }
 
 // Render sections
-function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl) {
+function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl, showFuture) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
@@ -172,78 +182,149 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
     }
 
     const ul = document.createElement("ul");
-    events.forEach(ev => {
-      const li = document.createElement("li");
 
-      // apply pulse if within window
-      if (ev.isSoon) {
-        li.classList.add("upcoming-soon");
-        li.dataset.startTime = ev.date.getTime();
-      }
-
-      // NEW: add class if event is in progress
-      if (ev.isInProgress) {
-        li.classList.add("event-in-progress");
-      }
-
-      const ts = document.createElement("span");
-      ts.className = "event-time";
-      ts.textContent = ev.timeStr;
-
-      const linkEl = document.createElement("a");
-      linkEl.href = ev.link;
-      linkEl.target = "_blank";
-      linkEl.rel = "noopener noreferrer";
-      linkEl.textContent = ev.title;
-      if (ev.isPast) linkEl.classList.add("event-past");
-
-      const btn = document.createElement("button");
-      btn.className = "info-icon";
-      btn.setAttribute("aria-label", "More information");
-      btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
-
-      const popup = document.createElement("div");
-      popup.className = "event-popup";
-      popup.innerHTML = `
-        <div class="popup-header">
-          <button class="popup-close" aria-label="Close popup">&times;</button>
-        </div>
-        <div><strong>${ev.title}</strong></div>
-        <div>${ev.description}</div>
-      `;
-      popup.querySelector(".popup-close").addEventListener("click", () => {
-        popup.classList.remove("visible", "above");
-        btn.classList.remove("active");
+  // For 'Later This Week', group by day and show day name
+  if (label === "Later This Week") {
+      // Group events by day
+      const byDay = {};
+      events.forEach(ev => {
+        // Format: Thursday, August 28, 2025
+        const dayKey = ev.date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if (!byDay[dayKey]) byDay[dayKey] = [];
+        byDay[dayKey].push(ev);
       });
+      Object.entries(byDay).forEach(([day, dayEvents]) => {
+        const dayLi = document.createElement("li");
+        dayLi.style.fontWeight = "bold";
+        dayLi.style.marginTop = "10px";
+        dayLi.textContent = day;
+        ul.appendChild(dayLi);
+        dayEvents.forEach(ev => {
+          const li = document.createElement("li");
 
-      btn.addEventListener("click", e => {
-        e.stopPropagation();
-        const open = popup.classList.contains("visible");
-        document.querySelectorAll(".event-popup")
-          .forEach(p => p.classList.remove("visible", "above"));
-        document.querySelectorAll(".info-icon")
-          .forEach(ic => ic.classList.remove("active"));
-        if (!open) {
-          btn.classList.add("active");
-          popup.classList.add("visible");
-          requestAnimationFrame(() => {
-            const r = popup.getBoundingClientRect();
-            if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
-              popup.classList.add("above");
+          if (ev.isSoon) {
+            li.classList.add("upcoming-soon");
+            li.dataset.startTime = ev.date.getTime();
+          }
+          if (ev.isInProgress) {
+            li.classList.add("event-in-progress");
+          }
+          const ts = document.createElement("span");
+          ts.className = "event-time";
+          ts.textContent = ev.timeStr;
+          const linkEl = document.createElement("a");
+          linkEl.href = ev.link;
+          linkEl.target = "_blank";
+          linkEl.rel = "noopener noreferrer";
+          linkEl.textContent = ev.title;
+          if (ev.isPast) linkEl.classList.add("event-past");
+          const btn = document.createElement("button");
+          btn.className = "info-icon";
+          btn.setAttribute("aria-label", "More information");
+          btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
+          const popup = document.createElement("div");
+          popup.className = "event-popup";
+          popup.innerHTML = `
+            <div class="popup-header">
+              <button class="popup-close" aria-label="Close popup">&times;</button>
+            </div>
+            <div><strong>${ev.title}</strong></div>
+            <div>${ev.description}</div>
+          `;
+          popup.querySelector(".popup-close").addEventListener("click", () => {
+            popup.classList.remove("visible", "above");
+            btn.classList.remove("active");
+          });
+          btn.addEventListener("click", e => {
+            e.stopPropagation();
+            const open = popup.classList.contains("visible");
+            document.querySelectorAll(".event-popup")
+              .forEach(p => p.classList.remove("visible", "above"));
+            document.querySelectorAll(".info-icon")
+              .forEach(ic => ic.classList.remove("active"));
+            if (!open) {
+              btn.classList.add("active");
+              popup.classList.add("visible");
+              requestAnimationFrame(() => {
+                const r = popup.getBoundingClientRect();
+                if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
+                  popup.classList.add("above");
+                }
+              });
             }
           });
-        }
+          li.append(ts, linkEl, btn, popup);
+          ul.appendChild(li);
+        });
       });
-
-      li.append(ts, linkEl, btn, popup);
-      ul.appendChild(li);
-    });
+    } else {
+      events.forEach(ev => {
+        const li = document.createElement("li");
+        if (ev.isSoon) {
+          li.classList.add("upcoming-soon");
+          li.dataset.startTime = ev.date.getTime();
+        }
+        if (ev.isInProgress) {
+          li.classList.add("event-in-progress");
+        }
+        const ts = document.createElement("span");
+        ts.className = "event-time";
+        ts.textContent = ev.timeStr;
+        const linkEl = document.createElement("a");
+        linkEl.href = ev.link;
+        linkEl.target = "_blank";
+        linkEl.rel = "noopener noreferrer";
+        linkEl.textContent = ev.title;
+        if (ev.isPast) linkEl.classList.add("event-past");
+        const btn = document.createElement("button");
+        btn.className = "info-icon";
+        btn.setAttribute("aria-label", "More information");
+        btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
+        const popup = document.createElement("div");
+        popup.className = "event-popup";
+        popup.innerHTML = `
+          <div class="popup-header">
+            <button class="popup-close" aria-label="Close popup">&times;</button>
+          </div>
+          <div><strong>${ev.title}</strong></div>
+          <div>${ev.description}</div>
+        `;
+        popup.querySelector(".popup-close").addEventListener("click", () => {
+          popup.classList.remove("visible", "above");
+          btn.classList.remove("active");
+        });
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          const open = popup.classList.contains("visible");
+          document.querySelectorAll(".event-popup")
+            .forEach(p => p.classList.remove("visible", "above"));
+          document.querySelectorAll(".info-icon")
+            .forEach(ic => ic.classList.remove("active"));
+          if (!open) {
+            btn.classList.add("active");
+            popup.classList.add("visible");
+            requestAnimationFrame(() => {
+              const r = popup.getBoundingClientRect();
+              if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
+                popup.classList.add("above");
+              }
+            });
+          }
+        });
+        li.append(ts, linkEl, btn, popup);
+        ul.appendChild(li);
+      });
+    }
     section.appendChild(ul);
   }
+
 
   renderList("Today", data.todayUpcomingEvents, true);
   renderList("Earlier Today", data.todayEarlierEvents, false);
   renderList("Tomorrow", data.tomorrowEvents, true);
+  if (showFuture) {
+    renderList("Later This Week", data.futureEvents, true);
+  }
 
   container.appendChild(section);
   container.style.display = "block";
@@ -282,16 +363,18 @@ document.addEventListener("DOMContentLoaded", () => {
       renderEventSection(
         "general-events",
         "Events at Clark College",
-        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today and tomorrow.",
+        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
         gen,
-        "https://www.clark.edu/about/calendars/events.php"
+        "https://www.clark.edu/about/calendars/events.php",
+        true
       );
       renderEventSection(
         "training-events",
         "Employee Training and Development Events",
-        "These events are part of Clark College’s Employee Training and Development programs happening today and tomorrow.",
+        "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
         train,
-        "https://www.clark.edu/tlc/main-schedule.php"
+        "https://www.clark.edu/tlc/main-schedule.php",
+        true
       );
     })
     .finally(() => {
