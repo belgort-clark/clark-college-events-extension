@@ -54,27 +54,54 @@ function formatEventTime(date) {
 function fetchRssFeed(url, replacementBaseUrl) {
   const loadingMessage = document.getElementById('loading-message');
   let loadingTimeout;
-  // Hide overlay by default
   loadingMessage.classList.remove('show');
-  // Show overlay if loading takes longer than 2s
+  loadingMessage.style.display = '';
+  loadingMessage.setAttribute('aria-hidden', 'false');
   loadingTimeout = setTimeout(() => {
     loadingMessage.classList.add('show');
   }, 2000);
   return fetch(url)
-    .then(response => response.text())
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
     .then(text => {
       clearTimeout(loadingTimeout);
       loadingMessage.classList.remove('show');
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(text, "text/xml");
-      const items = xmlDoc.querySelectorAll("item");
+      return parseRss(text, replacementBaseUrl);
+    })
+    .catch(error => {
+      clearTimeout(loadingTimeout);
+      loadingMessage.classList.remove('show');
+      loadingMessage.style.display = 'none';
+      loadingMessage.setAttribute('aria-hidden', 'true');
+      const messages = document.getElementById('messages');
+      if (messages) {
+        messages.style.display = 'block';
+        messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Unable to load events. Please check your internet connection or try again later.';
+        messages.setAttribute('data-timeout-error', 'true');
+      }
+      // Hide main content sections when there's an error
+      const generalEvents = document.getElementById('general-events');
+      const trainingEvents = document.getElementById('training-events');
+      if (generalEvents) generalEvents.style.display = 'none';
+      if (trainingEvents) trainingEvents.style.display = 'none';
+      const main = document.getElementById('main-content');
+      if (main) main.style.opacity = 1;
+      // Return empty event lists so downstream code doesn't break
+      return { todayEarlierEvents: [], todayUpcomingEvents: [], tomorrowEvents: [], upcomingEvents: [] };
+    });
+}
+function parseRss(text, replacementBaseUrl) {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(text, "text/xml");
+  const items = xmlDoc.querySelectorAll("item");
 
-      const nowPT = getPacificNow();
-      const today = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-      const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
-
+  const nowPT = getPacificNow();
+  const today = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
 
   const todayUpcomingEvents = [];
   const todayEarlierEvents = [];
@@ -86,72 +113,71 @@ function fetchRssFeed(url, replacementBaseUrl) {
   rollingEnd.setDate(today.getDate() + 10);
   rollingEnd.setHours(23, 59, 59, 999);
 
-      Array.from(items)
-        .sort((a, b) =>
-          new Date(a.querySelector("pubDate")?.textContent || 0) -
-          new Date(b.querySelector("pubDate")?.textContent || 0)
-        )
-        .forEach(item => {
-          const title = item.querySelector("title")?.textContent || "";
-          const pubDateStr = item.querySelector("pubDate")?.textContent || "";
-          const eventDate = new Date(pubDateStr);
-          const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+  Array.from(items)
+    .sort((a, b) =>
+      new Date(a.querySelector("pubDate")?.textContent || 0) -
+      new Date(b.querySelector("pubDate")?.textContent || 0)
+    )
+    .forEach(item => {
+      const title = item.querySelector("title")?.textContent || "";
+      const pubDateStr = item.querySelector("pubDate")?.textContent || "";
+      const eventDate = new Date(pubDateStr);
+      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
-          // build link
-          let originalLink = item.querySelector("link")?.textContent || "";
-          let newLink = originalLink;
-          try {
-            const u = new URL(originalLink);
-            newLink = replacementBaseUrl + u.search;
-          } catch {
-            console.warn("Invalid URL in feed:", originalLink);
-          }
+      // build link
+      let originalLink = item.querySelector("link")?.textContent || "";
+      let newLink = originalLink;
+      try {
+        const u = new URL(originalLink);
+        newLink = replacementBaseUrl + u.search;
+      } catch {
+        console.warn("Invalid URL in feed:", originalLink);
+      }
 
-          // clean description
-          let rawDesc = item.querySelector("description")?.textContent || "";
-          let description = rawDesc
-            .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
-            .replace(/(<br\s*\/?>\s*)+$/gi, '');
-          // Remove <br> that immediately follows a </p>
-          description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
+      // clean description
+      let rawDesc = item.querySelector("description")?.textContent || "";
+      let description = rawDesc
+        .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
+        .replace(/(<br\s*\/?>\s*)+$/gi, '');
+      // Remove <br> that immediately follows a </p>
+      description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
 
-          // determine past
-          const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
-          const isPast =
-            !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
-            oneHourAfter < nowPT;
+      // determine past
+      const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
+      const isPast =
+        !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
+        oneHourAfter < nowPT;
 
-          // NEW: soon if within [-60min, +30min] window
-          const nowMs = nowPT.getTime();
-          const startMs = eventDate.getTime();
-          const past60 = nowMs - 60 * 60 * 1000;
-          const next30 = nowMs + 30 * 60 * 1000;
-          const isSoon = startMs >= past60 && startMs <= next30;
-          const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
+      // NEW: soon if within [-60min, +30min] window
+      const nowMs = nowPT.getTime();
+      const startMs = eventDate.getTime();
+      const past60 = nowMs - 60 * 60 * 1000;
+      const next30 = nowMs + 30 * 60 * 1000;
+      const isSoon = startMs >= past60 && startMs <= next30;
+      const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
 
-          const ev = {
-            title,
-            date: eventDate,
-            timeStr: formatEventTime(eventDate),
-            link: newLink,
-            isPast,
-            isSoon,
-            isInProgress,
-            description
-          };
+      const ev = {
+        title,
+        date: eventDate,
+        timeStr: formatEventTime(eventDate),
+        link: newLink,
+        isPast,
+        isSoon,
+        isInProgress,
+        description
+      };
 
-          if (eventDay.getTime() === today.getTime()) {
-            if (isPast) todayEarlierEvents.push(ev);
-            else todayUpcomingEvents.push(ev);
-          } else if (eventDay.getTime() === normTom.getTime()) {
-            tomorrowEvents.push(ev);
-          } else if (eventDay.getTime() > normTom.getTime() && eventDay.getTime() <= rollingEnd.getTime()) {
-            upcomingEvents.push(ev);
-          }
-        });
+      if (eventDay.getTime() === today.getTime()) {
+        if (isPast) todayEarlierEvents.push(ev);
+        else todayUpcomingEvents.push(ev);
+      } else if (eventDay.getTime() === normTom.getTime()) {
+        tomorrowEvents.push(ev);
+      } else if (eventDay.getTime() > normTom.getTime() && eventDay.getTime() <= rollingEnd.getTime()) {
+        upcomingEvents.push(ev);
+      }
+    });
 
   return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, upcomingEvents };
-    });
 }
 
 // Render sections
@@ -386,55 +412,101 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadingMessages = document.querySelectorAll("#loading-message");
   const loading = loadingMessages[loadingMessages.length - 1];
   let showLoadingTimeout = null;
-    Promise.all([
-      fetchRssFeed(
-        'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
-        'https://www.clark.edu/about/calendars/events.php'
-      ),
-      fetchRssFeed(
-        'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
-        'https://www.clark.edu/tlc/main-schedule.php'
-      )
-    ])
-      .then(([gen, train]) => {
-        renderEventSection(
-          "general-events",
-          "Events at Clark College",
-          "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
-          gen,
-          "https://www.clark.edu/about/calendars/events.php",
-          true
-        );
-        renderEventSection(
-          "training-events",
-          "Employee Training and Development Events",
-          "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
-          train,
-          "https://www.clark.edu/tlc/main-schedule.php",
-          true
-        );
-      })
-      .finally(() => {
-        if (showLoadingTimeout) {
-          clearTimeout(showLoadingTimeout);
-          showLoadingTimeout = null;
-        }
-        if (loading) {
-          loading.classList.remove('show');
-        }
-        const main = document.getElementById('main-content');
-        if (main) main.style.opacity = 1;
-        document.addEventListener("click", () => {
-          document.querySelectorAll(".event-popup")
-            .forEach(p => p.classList.remove("visible", "above"));
-          document.querySelectorAll(".info-icon")
-            .forEach(ic => ic.classList.remove("active"));
-        });
-      });
+  let globalTimeout = null;
+  const messages = document.getElementById('messages');
+
   // Show the loading overlay only if loading takes longer than 2 seconds
   showLoadingTimeout = setTimeout(() => {
     if (loading) {
       loading.classList.add('show');
     }
   }, 2000);
+
+  // Global timeout for all feeds (e.g., 10 seconds)
+  globalTimeout = setTimeout(() => {
+    if (loading) {
+      loading.classList.remove('show');
+      loading.style.display = 'none';
+      loading.setAttribute('aria-hidden', 'true');
+    }
+    if (messages) {
+      messages.style.display = 'block';
+      messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Unable to load events. Please check your internet connection or try again later.';
+      messages.setAttribute('data-timeout-error', 'true');
+    }
+    // Hide main content sections when there's an error
+    const generalEvents = document.getElementById('general-events');
+    const trainingEvents = document.getElementById('training-events');
+    if (generalEvents) generalEvents.style.display = 'none';
+    if (trainingEvents) trainingEvents.style.display = 'none';
+    const main = document.getElementById('main-content');
+    if (main) main.style.opacity = 1;
+  }, 10000);
+
+  Promise.all([
+    fetchRssFeed(
+      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
+      'https://www.clark.edu/about/calendars/events.php'
+    ),
+    fetchRssFeed(
+      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
+      'https://www.clark.edu/tlc/main-schedule.php'
+    )
+  ])
+    .then(([gen, train]) => {
+      if (globalTimeout) {
+        clearTimeout(globalTimeout);
+        globalTimeout = null;
+      }
+      
+      // Check if there's already an error displayed
+      const messages = document.getElementById('messages');
+      if (messages && messages.getAttribute('data-timeout-error') === 'true') {
+        // Don't render sections if there's an error
+        return;
+      }
+      
+      renderEventSection(
+        "general-events",
+        "Events at Clark College",
+        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
+        gen,
+        "https://www.clark.edu/about/calendars/events.php",
+        true
+      );
+      renderEventSection(
+        "training-events",
+        "Employee Training and Development Events",
+        "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
+        train,
+        "https://www.clark.edu/tlc/main-schedule.php",
+        true
+      );
+    })
+    .finally(() => {
+      if (showLoadingTimeout) {
+        clearTimeout(showLoadingTimeout);
+        showLoadingTimeout = null;
+      }
+      if (globalTimeout) {
+        clearTimeout(globalTimeout);
+        globalTimeout = null;
+      }
+      // Only hide overlay and show content if a timeout error is not already shown
+      if (messages && messages.getAttribute('data-timeout-error') === 'true') {
+        // Do nothing, error already shown
+      } else {
+        if (loading) {
+          loading.classList.remove('show');
+        }
+        const main = document.getElementById('main-content');
+        if (main) main.style.opacity = 1;
+      }
+      document.addEventListener("click", () => {
+        document.querySelectorAll(".event-popup")
+          .forEach(p => p.classList.remove("visible", "above"));
+        document.querySelectorAll(".info-icon")
+          .forEach(ic => ic.classList.remove("active"));
+      });
+    });
 });
