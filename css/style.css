@@ -71,7 +71,24 @@ h2 a:active {
 }
 
 footer {
+    margin-top: 30px;
+    padding: 15px 0 5px 0;
+    border-top: 1px solid #dadada;
+    text-align: center;
     margin-bottom: 0;
+}
+
+footer a {
+    color: #666;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+footer a:hover,
+footer a:focus {
+    color: #535486;
+    text-decoration: underline;
 }
 
 /* ========== Modal Styles ========== */
@@ -108,6 +125,17 @@ ul.changelog li {
     display: list-item;
     list-style-type: disc;
     margin-left: 20px;
+}
+
+#viewinbrowser ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
+
+#viewinbrowser li {
+    display: list-item;
+    margin-bottom: 12px;
+    line-height: 1.5;
 }
 
 li {
