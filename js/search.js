@@ -115,8 +115,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const titleDiv = document.createElement("div");
         titleDiv.innerHTML = `<strong>${event.title}</strong>`;
+
+        // Insert Location before Web Area Keywords
+        let descWithLocation = event.description;
+        if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+            descWithLocation = descWithLocation.replace(
+                '<b>Web Area Keywords</b>',
+                `<b>Location</b>:&nbsp;${event.location} <br/><b>Web Area Keywords</b>`
+            );
+        } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+            descWithLocation = descWithLocation.replace(
+                '<b>Event Locator</b>',
+                `<b>Location</b>:&nbsp;${event.location} <br/><b>Event Locator</b>`
+            );
+        } else {
+            descWithLocation += `<br/><b>Location</b>:&nbsp;${event.location}`;
+        }
+
         const descDiv = document.createElement("div");
-        descDiv.innerHTML = event.description;
+        descDiv.innerHTML = descWithLocation;
 
         popup.appendChild(popupHeader);
         popup.appendChild(titleDiv);
@@ -173,15 +190,41 @@ document.addEventListener("DOMContentLoaded", () => {
                     return Array.from(xml.querySelectorAll("item"))
                         .map(item => {
                             const title = item.querySelector("title")?.textContent || "";
-                            let desc = item.querySelector("description")?.textContent || "";
-                            desc = desc.replace(/(<br\s*\/?>\s*){2,}/gi, '<br>').replace(/(<br\s*\/?>\s*)+$/gi, '');
+                            // Clean description
+                            let rawDesc = item.querySelector("description")?.textContent || "";
+                            let description = rawDesc
+                                .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
+                                .replace(/(<br\s*\/?>\s*)+$/gi, '')
+                                .replace(/<div[^>]*>\s*&nbsp;\s*<\/div>/gi, '');
+                            // Remove <br> that immediately follows a </p>
+                            description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
+                            // Remove <br> that immediately follows a <div> opening tag (run multiple times to catch all instances)
+                            while (/<div[^>]*>\s*<br\s*\/?>/i.test(description)) {
+                                description = description.replace(/<div([^>]*)>\s*<br\s*\/?>/gi, '<div$1>');
+                            }
+                            // Remove <br> that immediately follows a </div> closing tag (run multiple times to catch all instances)
+                            while (/<\/div>\s*<br\s*\/?>/i.test(description)) {
+                                description = description.replace(/<\/div>\s*<br\s*\/?>/gi, '</div>');
+                            }
+
+                            // Extract location from description (it's at the beginning before first <br/>)
+                            let location = "Location not specified";
+                            const descMatch = description.match(/^([^<]+)<br/i);
+                            if (descMatch) {
+                                const firstLine = descMatch[1].trim();
+                                // Check if the first line is a date (contains day name followed by comma)
+                                if (!/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),/.test(firstLine)) {
+                                    location = firstLine;
+                                }
+                            }
+
                             const link = item.querySelector("link")?.textContent || "";
                             const date = new Date(item.querySelector("pubDate")?.textContent || "");
                             let newLink = link;
                             try {
                                 newLink = feed.baseUrl + new URL(link).search;
                             } catch { }
-                            return { title, description: desc, link: newLink, date, label: feed.label };
+                            return { title, description: description, link: newLink, date, label: feed.label, location: location };
                         })
                         .filter(ev => ev.title.toLowerCase().includes(q));
                 })

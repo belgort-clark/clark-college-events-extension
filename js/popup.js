@@ -138,9 +138,18 @@ function parseRss(text, replacementBaseUrl) {
       let rawDesc = item.querySelector("description")?.textContent || "";
       let description = rawDesc
         .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
-        .replace(/(<br\s*\/?>\s*)+$/gi, '');
+        .replace(/(<br\s*\/?>\s*)+$/gi, '')
+        .replace(/<div[^>]*>\s*&nbsp;\s*<\/div>/gi, '');
       // Remove <br> that immediately follows a </p>
       description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
+      // Remove <br> that immediately follows a <div> opening tag (run multiple times to catch all instances)
+      while (/<div[^>]*>\s*<br\s*\/?>/i.test(description)) {
+        description = description.replace(/<div([^>]*)>\s*<br\s*\/?>/gi, '<div$1>');
+      }
+      // Remove <br> that immediately follows a </div> closing tag (run multiple times to catch all instances)
+      while (/<\/div>\s*<br\s*\/?>/i.test(description)) {
+        description = description.replace(/<\/div>\s*<br\s*\/?>/gi, '</div>');
+      }
 
       // determine past
       const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
@@ -156,6 +165,17 @@ function parseRss(text, replacementBaseUrl) {
       const isSoon = startMs >= past60 && startMs <= next30;
       const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
 
+      // Extract location from description (it's at the beginning before first <br/>)
+      let location = "Location not specified";
+      const descMatch = description.match(/^([^<]+)<br/i);
+      if (descMatch) {
+        const firstLine = descMatch[1].trim();
+        // Check if the first line is a date (contains day name followed by comma)
+        if (!/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),/.test(firstLine)) {
+          location = firstLine;
+        }
+      }
+
       const ev = {
         title,
         date: eventDate,
@@ -164,7 +184,8 @@ function parseRss(text, replacementBaseUrl) {
         isPast,
         isSoon,
         isInProgress,
-        description
+        description,
+        location: location
       };
 
       if (eventDay.getTime() === today.getTime()) {
@@ -221,8 +242,8 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
     const ul = document.createElement("ul");
 
-  // For 'Upcoming Events (next 14 days)', group by day and show day name
-  if (label.startsWith("Upcoming Events")) {
+    // For 'Upcoming Events (next 14 days)', group by day and show day name
+    if (label.startsWith("Upcoming Events")) {
       // Group events by day
       const byDay = {};
       events.forEach(ev => {
@@ -262,12 +283,27 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
           btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
           const popup = document.createElement("div");
           popup.className = "event-popup";
+          // Insert Location before Web Area Keywords
+          let descWithLocation = ev.description;
+          if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+            descWithLocation = descWithLocation.replace(
+              '<b>Web Area Keywords</b>',
+              `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
+            );
+          } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+            descWithLocation = descWithLocation.replace(
+              '<b>Event Locator</b>',
+              `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
+            );
+          } else {
+            descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
+          }
           popup.innerHTML = `
             <div class="popup-header">
               <button class="popup-close" aria-label="Close popup">&times;</button>
             </div>
             <div><strong>${ev.title}</strong></div>
-            <div>${ev.description}</div>
+            <div>${descWithLocation}</div>
           `;
           const closeBtn = popup.querySelector(".popup-close");
           closeBtn.addEventListener("click", () => {
@@ -290,7 +326,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
                 closeBtn.focus();
               }, 0);
               // Trap focus inside popup and close on Escape
-              const trap = function(ev) {
+              const trap = function (ev) {
                 if (ev.key === "Escape") {
                   popup.classList.remove("visible", "above");
                   btn.classList.remove("active");
@@ -348,12 +384,27 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
         btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
         const popup = document.createElement("div");
         popup.className = "event-popup";
+        // Insert Location before Web Area Keywords
+        let descWithLocation = ev.description;
+        if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+          descWithLocation = descWithLocation.replace(
+            '<b>Web Area Keywords</b>',
+            `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
+          );
+        } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+          descWithLocation = descWithLocation.replace(
+            '<b>Event Locator</b>',
+            `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
+          );
+        } else {
+          descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
+        }
         popup.innerHTML = `
           <div class="popup-header">
             <button class="popup-close" aria-label="Close popup">&times;</button>
           </div>
           <div><strong>${ev.title}</strong></div>
-          <div>${ev.description}</div>
+          <div>${descWithLocation}</div>
         `;
         popup.querySelector(".popup-close").addEventListener("click", () => {
           popup.classList.remove("visible", "above");
@@ -458,14 +509,14 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(globalTimeout);
         globalTimeout = null;
       }
-      
+
       // Check if there's already an error displayed
       const messages = document.getElementById('messages');
       if (messages && messages.getAttribute('data-timeout-error') === 'true') {
         // Don't render sections if there's an error
         return;
       }
-      
+
       renderEventSection(
         "general-events",
         "Events at Clark College",
