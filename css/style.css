@@ -42,8 +42,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* ========== Base Styles ========== */
@@ -267,37 +272,61 @@ a.event-past {
     display: none;
     position: fixed;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scale(0.9);
     bottom: 20px;
     background: #fff;
     color: #333;
-    border: 1px solid #ccc;
+    border: 2px solid var(--secondary-purple);
     padding: 10px;
     width: 600px;
     max-height: 300px;
     overflow-y: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 40, 85, 0.25),
+        0 4px 12px rgba(0, 40, 85, 0.15),
+        0 0 0 1px rgba(83, 84, 134, 0.1);
     z-index: 9999;
     white-space: normal;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .event-popup.visible,
 .search-event-popup.visible {
     display: block;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
 }
 
 .popup-close {
-    background: none;
+    background: var(--secondary-purple);
     border: none;
     font-size: 1.2em;
     font-weight: bold;
-    color: #333;
+    color: #fff;
     cursor: pointer;
     position: absolute;
     top: 8px;
     right: 12px;
     line-height: 1;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.popup-close:hover {
+    background: var(--accent-orange);
+    transform: rotate(90deg);
+}
+
+.popup-close:focus {
+    outline: 2px solid var(--accent-teal);
+    outline-offset: 2px;
 }
 
 /* ========== Search Input & Clear Button ========== */
@@ -309,7 +338,8 @@ a.event-past {
 
 #search {
     width: 100%;
-    padding: 10px 2.0em 10px 10px; /* leave room for clear button */
+    padding: 10px 2.0em 10px 10px;
+    /* leave room for clear button */
     font-size: 1.2em;
     box-sizing: border-box;
     border: 1px solid #ccc;
