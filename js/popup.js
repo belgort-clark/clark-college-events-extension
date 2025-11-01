@@ -573,9 +573,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const main = document.getElementById('main-content');
         if (main) main.style.opacity = 1;
 
-        // Show footer after data loads
+        // Show footer and info message after data loads
         const footer = document.getElementById('footer');
         if (footer) footer.style.display = 'block';
+        const infoMessage = document.getElementById('info-message');
+        if (infoMessage) infoMessage.style.display = 'block';
       }
     });
 });

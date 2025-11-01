@@ -15,7 +15,7 @@
     --spacing-small: 6px;
     --spacing-medium: 12px;
     --spacing-large: 20px;
-    --font-family: "Atkinson Hyperlegible", sans-serif;
+    --font-family: Arial, sans-serif;
     --box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
     --transition-speed: 0.2s;
 }
@@ -80,9 +80,9 @@ h1 {
     align-items: center;
     justify-content: flex-start;
     color: var(--primary-blue);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
-    margin: 0;
+    margin: 0 0 10px 0;
 }
 
 h2 {
@@ -130,7 +130,6 @@ h2 a:active {
 footer {
     margin-top: 30px;
     padding: 15px 0 5px 0;
-    border-top: 1px solid var(--border-color);
     text-align: center;
     margin-bottom: 0;
 }
@@ -140,6 +139,7 @@ footer a {
     font-size: 0.9em;
     text-decoration: none;
     transition: color var(--transition-speed) ease;
+    margin-left: 15px;
 }
 
 footer a:hover,
@@ -165,8 +165,8 @@ footer a:focus {
 
 /* ========== Logo ========== */
 .logo-icon {
-    width: 75px;
-    margin: 0 16px 0 16px;
+    width: 60px;
+    margin-right: 12px;
     vertical-align: middle;
     filter: drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.25));
 }
@@ -227,7 +227,7 @@ li a {
 #training-events,
 #search-results {
     display: none;
-    background-color: var(--background-gray);
+    background-color: #f5f5f5;
     padding: var(--spacing-large);
     padding-top: 0;
     margin-top: var(--spacing-large);
@@ -525,6 +525,56 @@ nav ul li a:focus {
     text-decoration: underline;
     text-decoration-color: var(--accent-teal);
     text-underline-offset: var(--spacing-small);
+}
+
+/* ========== Info Message ========== */
+#info-message {
+    text-align: center;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 0.85em;
+    color: var(--text-light);
+    background: var(--background-gray);
+    border-radius: var(--border-radius-small);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow);
+}
+
+#info-message a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+#info-message a:hover,
+#info-message a:focus {
+    color: var(--accent-orange);
+    text-decoration: underline;
+}
+
+/* ========== Quick Navigation ========== */
+#quick-nav {
+    text-align: center;
+    padding: 6px 0;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+#quick-nav a {
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+}
+
+#quick-nav a:hover,
+#quick-nav a:focus {
+    color: var(--accent-orange);
+}
+
+#quick-nav span {
+    color: var(--text-light);
+    margin: 0 6px;
 }
 
 /* ── Pulse animation ── */

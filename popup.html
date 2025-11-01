@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -21,7 +21,7 @@
         <header class="modal-header">
             <h1 class="logo">
                 <img class="logo-icon" src="images/logo.png"
-                    alt="A monthly calendar"><br>
+                    alt="A monthly calendar">
                 <span id="event-date"></span>
             </h1>
         </header>
@@ -35,6 +35,12 @@
             </ul>
         </nav>
 
+        <div id="info-message" style="display: none;">
+            This extension displays <a href="#general-events">General Events</a>
+            and <a href="#training-events">Professional Training Events</a> from
+            Clark College.
+        </div>
+
         <main role="main" id="main-content"
             style="opacity:0; transition: opacity 0.4s; position:relative;">
             <div id="messages" role="alert"></div>
@@ -47,8 +53,8 @@
         </div>
 
         <footer id="footer" style="display: none;">
-            <a href="about.html">ℹ️ About</a> | <a href="changelog.html">🛠️
-                Change Log</a>
+            <a href="about.html">About</a> <a href="changelog.html">Change
+                Log</a>
         </footer>
     </div>
     <script src="js/popup.js"></script>
