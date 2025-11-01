@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Build a single <li> + popup for each result
+    // Build a single <li> + expandable details for each result
     function createEventListItem(event) {
         const nowPt = getPacificNow().getTime();
         const evTs = event.date.getTime();
@@ -92,83 +92,72 @@ document.addEventListener("DOMContentLoaded", () => {
         const infoButton = document.createElement("button");
         infoButton.className = "info-icon";
         infoButton.setAttribute("aria-label", "More information about this event");
-        infoButton.innerHTML = `<i class="fa-solid fa-circle-info" aria-hidden="true"></i>`;
+        infoButton.setAttribute("aria-expanded", "false");
+        infoButton.innerHTML = `<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>`;
 
-        // popup
-        const popup = document.createElement("div");
-        popup.className = "search-event-popup";
-
-        // close button
-        const popupClose = document.createElement("button");
-        popupClose.className = "popup-close";
-        popupClose.setAttribute("aria-label", "Close popup");
-        popupClose.innerHTML = "×";
-        popupClose.addEventListener("click", () => {
-            popup.classList.remove("visible", "above");
-            infoButton.classList.remove("active");
-        });
-
-        // header & content
-        const popupHeader = document.createElement("div");
-        popupHeader.className = "popup-header";
-        popupHeader.appendChild(popupClose);
-
-        const titleDiv = document.createElement("div");
-        titleDiv.innerHTML = `<strong>${event.title}</strong>`;
+        // Create expandable details container
+        const detailsContainer = document.createElement("div");
+        detailsContainer.className = "event-details";
 
         // Insert Location before Web Area Keywords
-        let descWithLocation = event.description;
-        if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-            descWithLocation = descWithLocation.replace(
-                '<b>Web Area Keywords</b>',
-                `<b>Location</b>:&nbsp;${event.location} <br/><b>Web Area Keywords</b>`
-            );
-        } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-            descWithLocation = descWithLocation.replace(
-                '<b>Event Locator</b>',
-                `<b>Location</b>:&nbsp;${event.location} <br/><b>Event Locator</b>`
-            );
-        } else {
-            descWithLocation += `<br/><b>Location</b>:&nbsp;${event.location}`;
-        }
+        // COMMENTED OUT FOR NOW
+        // let descWithLocation = event.description;
+        // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+        //     descWithLocation = descWithLocation.replace(
+        //         '<b>Web Area Keywords</b>',
+        //         `<b>Location</b>:&nbsp;${event.location} <br/><b>Web Area Keywords</b>`
+        //     );
+        // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+        //     descWithLocation = descWithLocation.replace(
+        //         '<b>Event Locator</b>',
+        //         `<b>Location</b>:&nbsp;${event.location} <br/><b>Event Locator</b>`
+        //     );
+        // } else {
+        //     descWithLocation += `<br/><b>Location</b>:&nbsp;${event.location}`;
+        // }
 
-        const descDiv = document.createElement("div");
-        descDiv.innerHTML = descWithLocation;
+        detailsContainer.innerHTML = `
+            <div class="event-details-content">
+                <div><strong>${event.title}</strong></div>
+                <div>${event.description}</div>
+            </div>
+        `;
 
-        popup.appendChild(popupHeader);
-        popup.appendChild(titleDiv);
-        popup.appendChild(descDiv);
-
-        // toggle popup on info-button click
+        // toggle expansion on info-button click
         infoButton.addEventListener("click", e => {
             e.stopPropagation();
-            const isOpen = popup.classList.contains("visible");
-            document.querySelectorAll(".search-event-popup")
-                .forEach(p => p.classList.remove("visible", "above"));
-            document.querySelectorAll(".info-icon")
-                .forEach(ic => ic.classList.remove("active"));
+            const isExpanded = detailsContainer.classList.contains("expanded");
 
-            if (!isOpen) {
-                infoButton.classList.add("active");
-                popup.classList.add("visible");
-                requestAnimationFrame(() => {
-                    const rect = popup.getBoundingClientRect();
-                    const belowSpace = window.innerHeight - rect.bottom;
-                    const aboveSpace = rect.top;
-                    if (belowSpace < 100 && aboveSpace > rect.height + 20) {
-                        popup.classList.add("above");
-                    } else {
-                        popup.classList.remove("above");
-                    }
+            // Close all other expanded details
+            document.querySelectorAll(".event-details.expanded")
+                .forEach(d => {
+                    d.classList.remove("expanded");
+                    d.style.maxHeight = null;
                 });
+            document.querySelectorAll(".info-icon")
+                .forEach(ic => {
+                    ic.classList.remove("active");
+                    ic.setAttribute("aria-expanded", "false");
+                    ic.querySelector("i").className = "fa-solid fa-chevron-down";
+                });
+
+            // If this item wasn't expanded, expand it now
+            if (!isExpanded) {
+                infoButton.classList.add("active");
+                infoButton.setAttribute("aria-expanded", "true");
+                infoButton.querySelector("i").className = "fa-solid fa-chevron-up";
+                detailsContainer.classList.add("expanded");
+                detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
             }
         });
 
-        // assemble
-        li.appendChild(timeSpan);
-        li.appendChild(link);
-        li.appendChild(infoButton);
-        li.appendChild(popup);
+        // Wrap time, link, and button in a container
+        const eventHeader = document.createElement("div");
+        eventHeader.className = "search-event-header";
+        eventHeader.append(timeSpan, link, infoButton);
+
+        li.appendChild(eventHeader);
+        li.appendChild(detailsContainer);
         return li;
     }
 

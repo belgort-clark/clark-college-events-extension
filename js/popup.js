@@ -142,22 +142,27 @@ function parseRss(text, replacementBaseUrl) {
         .replace(/<div[^>]*>\s*&nbsp;\s*<\/div>/gi, '');
       // Remove <br> that immediately follows a </p>
       description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
-      // Remove <br> that immediately follows a <div> opening tag (run multiple times to catch all instances)
+      // Remove <br> that immediately follows a <div> opening tag
       while (/<div[^>]*>\s*<br\s*\/?>/i.test(description)) {
         description = description.replace(/<div([^>]*)>\s*<br\s*\/?>/gi, '<div$1>');
       }
-      // Remove <br> that immediately follows a </div> closing tag (run multiple times to catch all instances)
+      // Remove <br> that immediately follows a </div> closing tag
       while (/<\/div>\s*<br\s*\/?>/i.test(description)) {
         description = description.replace(/<\/div>\s*<br\s*\/?>/gi, '</div>');
       }
 
-      // determine past
+      // Determine if event has passed (1 hour after start time)
       const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
       const isPast =
         !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
         oneHourAfter < nowPT;
 
-      // NEW: soon if within [-60min, +30min] window
+      // ============================================================================
+      // EVENT STATE DETECTION - Controls "soon" (orange pulse) and "in progress" (green pulse)
+      // ============================================================================
+      // PRODUCTION MODE (ACTIVE):
+      // - "Soon": Events within 60 min before to 30 min after start time
+      // - "In Progress": Events that started and are within 1 hour duration
       const nowMs = nowPT.getTime();
       const startMs = eventDate.getTime();
       const past60 = nowMs - 60 * 60 * 1000;
@@ -165,12 +170,20 @@ function parseRss(text, replacementBaseUrl) {
       const isSoon = startMs >= past60 && startMs <= next30;
       const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
 
+      // TEST MODE (to visualize event states with more data):
+      // Uncomment the 4 lines below and comment out the 4 lines above
+      // const past60 = nowMs - 24 * 60 * 60 * 1000;
+      // const next30 = nowMs + 24 * 60 * 60 * 1000;
+      // const isSoon = startMs >= past60 && startMs <= next30;
+      // const isInProgress = startMs <= nowMs && nowMs < startMs + 24 * 60 * 60 * 1000;
+      // ============================================================================
+
       // Extract location from description (it's at the beginning before first <br/>)
       let location = "Location not specified";
       const descMatch = description.match(/^([^<]+)<br/i);
       if (descMatch) {
         const firstLine = descMatch[1].trim();
-        // Check if the first line is a date (contains day name followed by comma)
+        // Check if the first line is a date (skip if it starts with a day name)
         if (!/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),/.test(firstLine)) {
           location = firstLine;
         }
@@ -277,85 +290,75 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
           linkEl.rel = "noopener noreferrer";
           linkEl.textContent = ev.title;
           if (ev.isPast) linkEl.classList.add("event-past");
+
           const btn = document.createElement("button");
           btn.className = "info-icon";
           btn.setAttribute("aria-label", "More information");
-          btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
-          const popup = document.createElement("div");
-          popup.className = "event-popup";
+          btn.setAttribute("aria-expanded", "false");
+          btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+
+          // Create expandable details container
+          const detailsContainer = document.createElement("div");
+          detailsContainer.className = "event-details";
+
           // Insert Location before Web Area Keywords
-          let descWithLocation = ev.description;
-          if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-            descWithLocation = descWithLocation.replace(
-              '<b>Web Area Keywords</b>',
-              `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
-            );
-          } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-            descWithLocation = descWithLocation.replace(
-              '<b>Event Locator</b>',
-              `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
-            );
-          } else {
-            descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
-          }
-          popup.innerHTML = `
-            <div class="popup-header">
-              <button class="popup-close" aria-label="Close popup">&times;</button>
+          // COMMENTED OUT FOR NOW
+          // let descWithLocation = ev.description;
+          // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+          //   descWithLocation = descWithLocation.replace(
+          //     '<b>Web Area Keywords</b>',
+          //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
+          //   );
+          // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+          //   descWithLocation = descWithLocation.replace(
+          //     '<b>Event Locator</b>',
+          //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
+          //   );
+          // } else {
+          //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
+          // }
+
+          detailsContainer.innerHTML = `
+            <div class="event-details-content">
+              <div><strong>${ev.title}</strong></div>
+              <div>${ev.description}</div>
             </div>
-            <div><strong>${ev.title}</strong></div>
-            <div>${descWithLocation}</div>
           `;
-          const closeBtn = popup.querySelector(".popup-close");
-          closeBtn.addEventListener("click", () => {
-            popup.classList.remove("visible", "above");
-            btn.classList.remove("active");
-            btn.focus();
-          });
+
           btn.addEventListener("click", e => {
             e.stopPropagation();
-            const open = popup.classList.contains("visible");
-            document.querySelectorAll(".event-popup")
-              .forEach(p => p.classList.remove("visible", "above"));
+            const isExpanded = detailsContainer.classList.contains("expanded");
+
+            // Close all other expanded details
+            document.querySelectorAll(".event-details.expanded")
+              .forEach(d => {
+                d.classList.remove("expanded");
+                d.style.maxHeight = null;
+              });
             document.querySelectorAll(".info-icon")
-              .forEach(ic => ic.classList.remove("active"));
-            if (!open) {
+              .forEach(ic => {
+                ic.classList.remove("active");
+                ic.setAttribute("aria-expanded", "false");
+                ic.querySelector("i").className = "fa-solid fa-chevron-down";
+              });
+
+            // If this item wasn't expanded, expand it now
+            if (!isExpanded) {
               btn.classList.add("active");
-              popup.classList.add("visible");
-              // Focus trap: focus close button
-              setTimeout(() => {
-                closeBtn.focus();
-              }, 0);
-              // Trap focus inside popup and close on Escape
-              const trap = function (ev) {
-                if (ev.key === "Escape") {
-                  popup.classList.remove("visible", "above");
-                  btn.classList.remove("active");
-                  btn.focus();
-                  document.removeEventListener("keydown", trap);
-                  return;
-                }
-                if (ev.key === "Tab") {
-                  const focusables = popup.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                  if (!focusables.length) return;
-                  const first = focusables[0];
-                  const last = focusables[focusables.length - 1];
-                  if (ev.shiftKey) {
-                    if (document.activeElement === first) {
-                      last.focus();
-                      ev.preventDefault();
-                    }
-                  } else {
-                    if (document.activeElement === last) {
-                      first.focus();
-                      ev.preventDefault();
-                    }
-                  }
-                }
-              };
-              document.addEventListener("keydown", trap);
+              btn.setAttribute("aria-expanded", "true");
+              btn.querySelector("i").className = "fa-solid fa-chevron-up";
+              detailsContainer.classList.add("expanded");
+              detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
             }
           });
-          li.append(ts, linkEl, btn, popup);
+
+          // Wrap time, link, and button in a container
+          const eventHeader = document.createElement("div");
+          eventHeader.className = "event-header";
+          eventHeader.append(ts, linkEl, btn);
+
+          li.appendChild(eventHeader);
+          li.appendChild(detailsContainer);
           ul.appendChild(li);
         });
       });
@@ -378,57 +381,74 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
         linkEl.rel = "noopener noreferrer";
         linkEl.textContent = ev.title;
         if (ev.isPast) linkEl.classList.add("event-past");
+
         const btn = document.createElement("button");
         btn.className = "info-icon";
         btn.setAttribute("aria-label", "More information");
-        btn.innerHTML = '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>';
-        const popup = document.createElement("div");
-        popup.className = "event-popup";
+        btn.setAttribute("aria-expanded", "false");
+        btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+
+        // Create expandable details container
+        const detailsContainer = document.createElement("div");
+        detailsContainer.className = "event-details";
+
         // Insert Location before Web Area Keywords
-        let descWithLocation = ev.description;
-        if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-          descWithLocation = descWithLocation.replace(
-            '<b>Web Area Keywords</b>',
-            `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
-          );
-        } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-          descWithLocation = descWithLocation.replace(
-            '<b>Event Locator</b>',
-            `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
-          );
-        } else {
-          descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
-        }
-        popup.innerHTML = `
-          <div class="popup-header">
-            <button class="popup-close" aria-label="Close popup">&times;</button>
+        // COMMENTED OUT FOR NOW
+        // let descWithLocation = ev.description;
+        // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+        //   descWithLocation = descWithLocation.replace(
+        //     '<b>Web Area Keywords</b>',
+        //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
+        //   );
+        // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+        //   descWithLocation = descWithLocation.replace(
+        //     '<b>Event Locator</b>',
+        //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
+        //   );
+        // } else {
+        //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
+        // }
+
+        detailsContainer.innerHTML = `
+          <div class="event-details-content">
+            <div><strong>${ev.title}</strong></div>
+            <div>${ev.description}</div>
           </div>
-          <div><strong>${ev.title}</strong></div>
-          <div>${descWithLocation}</div>
         `;
-        popup.querySelector(".popup-close").addEventListener("click", () => {
-          popup.classList.remove("visible", "above");
-          btn.classList.remove("active");
-        });
+
         btn.addEventListener("click", e => {
           e.stopPropagation();
-          const open = popup.classList.contains("visible");
-          document.querySelectorAll(".event-popup")
-            .forEach(p => p.classList.remove("visible", "above"));
-          document.querySelectorAll(".info-icon")
-            .forEach(ic => ic.classList.remove("active"));
-          if (!open) {
-            btn.classList.add("active");
-            popup.classList.add("visible");
-            requestAnimationFrame(() => {
-              const r = popup.getBoundingClientRect();
-              if (window.innerHeight - r.bottom < 100 && r.top > r.height + 20) {
-                popup.classList.add("above");
-              }
+          const isExpanded = detailsContainer.classList.contains("expanded");
+
+          // Close all other expanded details
+          document.querySelectorAll(".event-details.expanded")
+            .forEach(d => {
+              d.classList.remove("expanded");
+              d.style.maxHeight = null;
             });
+          document.querySelectorAll(".info-icon")
+            .forEach(ic => {
+              ic.classList.remove("active");
+              ic.setAttribute("aria-expanded", "false");
+              ic.querySelector("i").className = "fa-solid fa-chevron-down";
+            });
+
+          if (!isExpanded) {
+            btn.classList.add("active");
+            btn.setAttribute("aria-expanded", "true");
+            btn.querySelector("i").className = "fa-solid fa-chevron-up";
+            detailsContainer.classList.add("expanded");
+            detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
           }
         });
-        li.append(ts, linkEl, btn, popup);
+
+        // Wrap time, link, and button in a container
+        const eventHeader = document.createElement("div");
+        eventHeader.className = "event-header";
+        eventHeader.append(ts, linkEl, btn);
+
+        li.appendChild(eventHeader);
+        li.appendChild(detailsContainer);
         ul.appendChild(li);
       });
     }
@@ -552,12 +572,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const main = document.getElementById('main-content');
         if (main) main.style.opacity = 1;
+
+        // Show footer after data loads
+        const footer = document.getElementById('footer');
+        if (footer) footer.style.display = 'block';
       }
-      document.addEventListener("click", () => {
-        document.querySelectorAll(".event-popup")
-          .forEach(p => p.classList.remove("visible", "above"));
-        document.querySelectorAll(".info-icon")
-          .forEach(ic => ic.classList.remove("active"));
-      });
     });
 });
