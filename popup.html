@@ -26,19 +26,31 @@
             </h1>
         </header>
 
-        <nav role="navigation" aria-label="Main navigation">
+                <nav>
             <ul>
-                <li><a href="popup.html" id="active-page" aria-current="page">🏡
-                        Home</a></li>
+                <li><a href="popup.html" id="active-page">🏡 Home</a></li>
                 <li><a href="search.html">🔍 Search Events</a></li>
                 <li><a href="help.html">🛟 Help & FAQ</a></li>
+                <li><a href="about.html">ℹ️ About</a></li>
+                <li><a href="changelog.html">📋 Change Log</a></li>
             </ul>
         </nav>
 
         <div id="info-message" style="display: none;">
-            This extension displays <a href="#general-events">General Events</a>
-            and <a href="#training-events">Professional Training Events</a> from
-            Clark College.
+            Displaying <a href="#general-events">General Events</a>
+            and <a href="#training-events">Professional Training</a> from Clark
+            College
+        </div>
+
+        <div id="filter-search" style="display: none;">
+            <div class="filter-input-wrapper">
+                <label for="filter-input" class="visually-hidden">Filter events
+                    by keyword</label>
+                <input type="text" id="filter-input"
+                    placeholder="Filter events...">
+                <button id="clear-filter" aria-label="Clear filter"
+                    title="Clear">&times;</button>
+            </div>
         </div>
 
         <main role="main" id="main-content"
@@ -51,11 +63,6 @@
             <span class="loading-spinner" aria-hidden="true"></span>
             <span class="loading-text">Getting data from 25Live...</span>
         </div>
-
-        <footer id="footer" style="display: none;">
-            <a href="about.html">About</a> <a href="changelog.html">Change
-                Log</a>
-        </footer>
     </div>
     <script src="js/popup.js"></script>
 </body>

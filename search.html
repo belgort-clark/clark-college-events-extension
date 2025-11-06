@@ -38,19 +38,20 @@
                 <li><a href="search.html" id="active-page">🔍 Search Events</a>
                 </li>
                 <li><a href="help.html">🛟 Help & FAQ</a></li>
+                <li><a href="about.html">ℹ️ About</a></li>
+                <li><a href="changelog.html">📋 Change Log</a></li>
             </ul>
         </nav>
 
         <main>
-            <h2 class="search-h2">Search Upcoming Events</h2>
             <p>Begin typing to search upcoming events...</p>
-            <!-- …inside <main>… -->
 
             <div id="search-input">
-                <div id="search-input">
+                <div class="filter-input-wrapper">
                     <label for="search" class="visually-hidden">Search events by
                         keyword or title</label>
-                    <input type="text" id="search" autofocus>
+                    <input type="text" id="search"
+                        placeholder="Search events..." autofocus>
                     <button id="clear-search" aria-label="Clear search input"
                         title="Clear">&times;</button>
                 </div>
@@ -67,11 +68,6 @@
                 <ul id="training-results" class="search-event-list"></ul>
             </div>
         </main>
-
-        <footer>
-            <a href="about.html">About</a> <a href="changelog.html">Change
-                Log</a>
-        </footer>
     </div>
     <script src="js/search.js"></script>
 </body>

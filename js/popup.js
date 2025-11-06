@@ -269,6 +269,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
         const dayLi = document.createElement("li");
         dayLi.style.fontWeight = "bold";
         dayLi.style.marginTop = "10px";
+        dayLi.style.color = "#555";
         dayLi.textContent = day;
         ul.appendChild(dayLi);
         dayEvents.forEach(ev => {
@@ -578,6 +579,149 @@ document.addEventListener("DOMContentLoaded", () => {
         if (footer) footer.style.display = 'block';
         const infoMessage = document.getElementById('info-message');
         if (infoMessage) infoMessage.style.display = 'block';
+        const filterSearch = document.getElementById('filter-search');
+        if (filterSearch) filterSearch.style.display = 'block';
       }
     });
+});
+
+// ========== Filter Functionality ==========
+document.addEventListener('DOMContentLoaded', () => {
+  const filterInput = document.getElementById('filter-input');
+  const clearFilterBtn = document.getElementById('clear-filter');
+
+  if (!filterInput || !clearFilterBtn) return;
+
+  // Store all event items for filtering
+  let allEventItems = [];
+
+  // Function to collect all event items
+  function collectEventItems() {
+    allEventItems = Array.from(document.querySelectorAll('#general-events li, #training-events li'));
+  }
+
+  // Function to hide/show section headers based on visible events
+  function updateSectionVisibility() {
+    const generalEvents = document.getElementById('general-events');
+    const trainingEvents = document.getElementById('training-events');
+
+    // Check general events
+    if (generalEvents) {
+      const visibleGeneralItems = Array.from(generalEvents.querySelectorAll('li')).filter(li => {
+        return li.style.display !== 'none' && !li.style.fontWeight; // Exclude day headers
+      });
+      const headers = generalEvents.querySelectorAll('h2');
+      headers.forEach(h => {
+        h.style.display = visibleGeneralItems.length > 0 ? 'block' : 'none';
+      });
+    }
+
+    // Check training events
+    if (trainingEvents) {
+      const visibleTrainingItems = Array.from(trainingEvents.querySelectorAll('li')).filter(li => {
+        return li.style.display !== 'none' && !li.style.fontWeight; // Exclude day headers
+      });
+      const headers = trainingEvents.querySelectorAll('h2');
+      headers.forEach(h => {
+        h.style.display = visibleTrainingItems.length > 0 ? 'block' : 'none';
+      });
+    }
+  }
+
+  // Function to filter events
+  function filterEvents() {
+    const searchTerm = filterInput.value.toLowerCase().trim();
+
+    if (searchTerm.length === 0) {
+      // Show all events and headers if search is empty
+      allEventItems.forEach(item => {
+        if (item.style.fontWeight) {
+          // Day headers
+          item.style.display = 'list-item';
+        } else {
+          // Event items
+          item.style.display = 'block';
+        }
+      });
+      // Show all section headers and "No scheduled events" messages
+      document.querySelectorAll('#general-events h2, #training-events h2').forEach(h => {
+        h.style.display = 'block';
+      });
+      document.querySelectorAll('#general-events p, #training-events p').forEach(p => {
+        if (p.textContent === 'No scheduled events') {
+          p.style.display = 'block';
+        }
+      });
+      return;
+    }
+
+    // Hide "No scheduled events" messages when filtering
+    document.querySelectorAll('#general-events p, #training-events p').forEach(p => {
+      if (p.textContent === 'No scheduled events') {
+        p.style.display = 'none';
+      }
+    });
+
+    allEventItems.forEach(item => {
+      // Skip day headers (they have fontWeight bold)
+      if (item.style.fontWeight) {
+        item.style.display = 'none'; // Hide day headers during search
+        return;
+      }
+
+      // Get event title
+      const titleElement = item.querySelector('.event-title');
+      const title = titleElement ? titleElement.textContent.toLowerCase() : '';
+
+      // Get event time
+      const timeElement = item.querySelector('.event-time');
+      const time = timeElement ? timeElement.textContent.toLowerCase() : '';
+
+      // Get expanded details content (description)
+      const detailsElement = item.querySelector('.event-details-content');
+      const details = detailsElement ? detailsElement.textContent.toLowerCase() : '';
+
+      // Check if search term matches title, time, or details
+      const matches = title.includes(searchTerm) ||
+        time.includes(searchTerm) ||
+        details.includes(searchTerm);
+
+      item.style.display = matches ? 'block' : 'none';
+    });
+
+    // Update section header visibility
+    updateSectionVisibility();
+  }
+
+  // Collect items when sections are populated
+  const observer = new MutationObserver(() => {
+    collectEventItems();
+  });
+
+  const generalEvents = document.getElementById('general-events');
+  const trainingEvents = document.getElementById('training-events');
+
+  if (generalEvents) {
+    observer.observe(generalEvents, { childList: true, subtree: true });
+  }
+  if (trainingEvents) {
+    observer.observe(trainingEvents, { childList: true, subtree: true });
+  }
+
+  // Event listeners
+  filterInput.addEventListener('input', filterEvents);
+
+  clearFilterBtn.addEventListener('click', () => {
+    filterInput.value = '';
+    filterEvents();
+    filterInput.focus();
+  });
+
+  // Clear on Escape key
+  filterInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      filterInput.value = '';
+      filterEvents();
+    }
+  });
 });

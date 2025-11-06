@@ -52,9 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function formatDateString(date) {
+        const year = String(date.getFullYear()).slice(-2);
         return date.toLocaleDateString(undefined, {
             weekday: 'short', month: 'short', day: 'numeric'
-        });
+        }) + " '" + year;
     }
 
     function formatEventTime(date) {
@@ -161,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return li;
     }
 
-    // fetch + filter by title only
+    // fetch + filter by title, time, and description
     function fetchAndSearchFeeds(query) {
         const q = query.toLowerCase();
         if (!q) {
@@ -213,9 +214,33 @@ document.addEventListener("DOMContentLoaded", () => {
                             try {
                                 newLink = feed.baseUrl + new URL(link).search;
                             } catch { }
-                            return { title, description: description, link: newLink, date, label: feed.label, location: location };
+
+                            // Format time for searching
+                            const timeStr = formatEventTime(date);
+                            const dateStr = formatDateString(date);
+
+                            return {
+                                title,
+                                description: description,
+                                link: newLink,
+                                date,
+                                label: feed.label,
+                                location: location,
+                                timeStr,
+                                dateStr
+                            };
                         })
-                        .filter(ev => ev.title.toLowerCase().includes(q));
+                        .filter(ev => {
+                            // Search in title, time, date, and description (stripped of HTML tags)
+                            const titleMatch = ev.title.toLowerCase().includes(q);
+                            const timeMatch = ev.timeStr.toLowerCase().includes(q);
+                            const dateMatch = ev.dateStr.toLowerCase().includes(q);
+                            // Strip HTML tags from description for searching
+                            const plainDesc = ev.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+                            const descMatch = plainDesc.includes(q);
+
+                            return titleMatch || timeMatch || dateMatch || descMatch;
+                        });
                 })
         )).then(all => {
             const flat = all.flat();
@@ -223,12 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
             trainingList.innerHTML = "";
 
             if (flat.length === 0) {
-                const p1 = document.createElement("p");
-                p1.textContent = "No events found";
-                eventList.appendChild(p1);
-                const p2 = document.createElement("p");
-                p2.textContent = "No events found";
-                trainingList.appendChild(p2);
+                // Don't show "No events found" - just leave lists empty
             } else {
                 flat.sort((a, b) => a.date - b.date);
                 let anyGen = false, anyTr = false;
@@ -242,16 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         anyGen = true;
                     }
                 });
-                if (!anyGen) {
-                    const p = document.createElement("p");
-                    p.textContent = "No events found";
-                    eventList.appendChild(p);
-                }
-                if (!anyTr) {
-                    const p = document.createElement("p");
-                    p.textContent = "No training events found";
-                    trainingList.appendChild(p);
-                }
+                // Don't show "No events found" messages - just leave sections empty
             }
 
             resultsContainer.style.display = "block";
