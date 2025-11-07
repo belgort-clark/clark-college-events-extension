@@ -681,3 +681,88 @@ nav ul li a:focus {
         box-shadow: 0 0 0 rgba(40, 167, 69, 0);
     }
 }
+
+/* ========== Responsive Web Overrides ========== */
+/* Detect if this is being viewed in a browser (not extension) by checking parent window */
+/* Extensions are always exactly 740px wide, so we target anything not that size */
+
+@media screen and (min-width: 741px) {
+    /* Desktop web browsers - make responsive and centered */
+    body {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        height: auto;
+        min-height: 100vh;
+    }
+}
+
+@media screen and (max-width: 739px) {
+    /* Mobile devices - full responsive */
+    body {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        margin: 0;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    #container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .logo-icon {
+        width: 50px;
+    }
+
+    nav ul {
+        flex-wrap: wrap;
+    }
+
+    nav ul li {
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
+
+    #general-events,
+    #training-events,
+    #search-results {
+        padding: var(--spacing-medium);
+    }
+
+    .event-time {
+        width: 80px;
+        font-size: 0.9em;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    /* Small mobile */
+    body {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    h1 {
+        font-size: 18px;
+    }
+
+    .logo-icon {
+        width: 40px;
+    }
+
+    nav ul li {
+        padding: 6px 8px;
+        font-size: 0.85em;
+    }
+
+    .event-time {
+        width: 70px;
+        font-size: 0.85em;
+    }
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View upcoming events at Clark College - community events, important dates, enrollment deadlines, and student activities.">
+    <meta name="theme-color" content="#002855">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Base styles (same as extension) -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/loading-overlay.css">
+    
+    <title>Clark College Events - Mobile Test</title>
+    
+    <!-- INLINE MOBILE STYLES FOR TESTING -->
+    <style>
+        /* Force responsive - inline styles have highest priority */
+        html {
+            width: 100% !important;
+            overflow-x: hidden !important;
+        }
+        
+        body {
+            width: 100% !important;
+            max-width: none !important;
+            min-width: auto !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            padding: 10px !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            background: #ffffcc !important; /* Yellow background to confirm styles are working */
+        }
+
+        #container {
+            padding: 14px !important;
+            max-width: 1200px;
+            width: 100% !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Make all content boxes responsive */
+        #general-events,
+        #training-events,
+        #search-results {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Make inputs responsive */
+        #filter-input,
+        #search {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Mobile specific */
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 16px !important;
+            }
+
+            h1 {
+                font-size: 20px !important;
+            }
+
+            .logo-icon {
+                width: 50px !important;
+            }
+
+            nav ul {
+                flex-wrap: wrap !important;
+            }
+
+            nav ul li {
+                padding: 8px 12px !important;
+                font-size: 0.9em !important;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                font-size: 14px !important;
+                padding: 5px !important;
+            }
+
+            h1 {
+                font-size: 18px !important;
+            }
+
+            .logo-icon {
+                width: 40px !important;
+            }
+
+            nav ul li {
+                padding: 6px 8px !important;
+                font-size: 0.85em !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <header class="modal-header">
+            <h1 class="logo">
+                <img class="logo-icon" src="images/logo.png"
+                    alt="Clark College Logo">
+                <span id="event-date"></span>
+            </h1>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="mobile-test.html" id="active-page">🏡 Home</a></li>
+                <li><a href="search.html">🔍 Search Events</a></li>
+                <li><a href="help.html">🛟 Help & FAQ</a></li>
+                <li><a href="about.html">ℹ️ About</a></li>
+                <li><a href="changelog.html">📋 Change Log</a></li>
+            </ul>
+        </nav>
+
+        <div id="info-message" style="display: none;">
+            Displaying <a href="#general-events">General Events</a>
+            and <a href="#training-events">Professional Training</a> from Clark
+            College
+        </div>
+
+        <div id="filter-search" style="display: none;">
+            <div class="filter-input-wrapper">
+                <label for="filter-input" class="visually-hidden">Filter events
+                    by keyword</label>
+                <input type="text" id="filter-input"
+                    placeholder="Filter events...">
+                <button id="clear-filter" aria-label="Clear filter"
+                    title="Clear">&times;</button>
+            </div>
+        </div>
+
+        <main role="main" id="main-content"
+            style="opacity:0; transition: opacity 0.4s; position:relative;">
+            <div id="messages" role="alert"></div>
+            <div id="general-events"></div>
+            <div id="training-events"></div>
+        </main>
+        
+        <div id="loading-message" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span class="loading-text">Getting data from 25Live...</span>
+        </div>
+    </div>
+    <script src="js/popup.js"></script>
+</body>
+
+</html>

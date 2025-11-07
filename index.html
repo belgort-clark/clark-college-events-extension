@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View upcoming events at Clark College - community events, important dates, enrollment deadlines, and student activities.">
+    <meta name="theme-color" content="#002855">
+    
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Base styles (same as extension) -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/loading-overlay.css">
+    
+    <!-- Mobile/Responsive overrides (web only) -->
+    <link rel="stylesheet" href="css/style-mobile.css?v=1">
+    
+    <title>Clark College Events</title>
+</head>
+
+<body>
+    <div id="container">
+        <header class="modal-header">
+            <h1 class="logo">
+                <img class="logo-icon" src="images/logo.png"
+                    alt="Clark College Logo">
+                <span id="event-date"></span>
+            </h1>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="index.html" id="active-page">🏡 Home</a></li>
+                <li><a href="web-search.html">🔍 Search Events</a></li>
+                <li><a href="web-help.html">🛟 Help & FAQ</a></li>
+                <li><a href="web-about.html">ℹ️ About</a></li>
+                <li><a href="web-changelog.html">📋 Change Log</a></li>
+            </ul>
+        </nav>
+
+        <div id="info-message" style="display: none;">
+            Displaying <a href="#general-events">General Events</a>
+            and <a href="#training-events">Professional Training</a> from Clark
+            College
+        </div>
+
+        <div id="filter-search" style="display: none;">
+            <div class="filter-input-wrapper">
+                <label for="filter-input" class="visually-hidden">Filter events
+                    by keyword</label>
+                <input type="text" id="filter-input"
+                    placeholder="Filter events...">
+                <button id="clear-filter" aria-label="Clear filter"
+                    title="Clear">&times;</button>
+            </div>
+        </div>
+
+        <main role="main" id="main-content"
+            style="opacity:0; transition: opacity 0.4s; position:relative;">
+            <div id="messages" role="alert"></div>
+            <div id="general-events"></div>
+            <div id="training-events"></div>
+        </main>
+        
+        <div id="loading-message" role="status" aria-live="polite">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span class="loading-text">Getting data from 25Live...</span>
+        </div>
+    </div>
+    <script src="js/popup.js"></script>
+</body>
+
+</html>

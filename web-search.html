@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Search - Clark College Events</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search upcoming events at Clark College - up to 60 days ahead.">
+    <meta name="theme-color" content="#002855">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="container">
+        <header class="modal-header">
+            <h1>
+                <img class="logo-icon" src="images/logo.png"
+                    alt="Clark College Logo">
+                Clark College Events<br>
+                Search Events
+            </h1>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="index.html">🏡 Home</a></li>
+                <li><a href="web-search.html" id="active-page">🔍 Search Events</a></li>
+                <li><a href="web-help.html">🛟 Help & FAQ</a></li>
+                <li><a href="web-about.html">ℹ️ About</a></li>
+                <li><a href="web-changelog.html">📋 Change Log</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <p>Begin typing to search upcoming events...</p>
+
+            <div id="search-input">
+                <div class="filter-input-wrapper">
+                    <label for="search" class="visually-hidden">Search events by
+                        keyword or title</label>
+                    <input type="text" id="search"
+                        placeholder="Search events..." autofocus>
+                    <button id="clear-search" aria-label="Clear search input"
+                        title="Clear">&times;</button>
+                </div>
+            </div>
+
+            <div id="search-results">
+                <h2>Search Results</h2>
+
+                <h3 id="events-heading" class="search-heading">Events</h3>
+                <ul id="events-results" class="search-event-list"></ul>
+
+                <h3 id="training-heading" class="search-heading">Training Events
+                </h3>
+                <ul id="training-results" class="search-event-list"></ul>
+            </div>
+        </main>
+    </div>
+    <script src="js/search.js"></script>
+</body>
+
+</html>

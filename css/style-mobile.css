@@ -1,0 +1,249 @@
+/* ========== Mobile/Web Responsive Overrides ========== */
+/* This file is used ONLY for the web version, not the browser extension */
+/* Include this file AFTER style.css in web version HTML files */
+
+/* TEST: If you see a red border, this file is loading */
+body {
+    border: 5px solid red !important;
+}
+
+/* Force responsive layout - overrides fixed dimensions from style.css */
+html {
+    width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Reset body dimensions for web - applies to ALL screen sizes */
+body {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+#container {
+    padding: 14px !important;
+    max-width: 1200px;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Make all content boxes responsive */
+#general-events,
+#training-events,
+#search-results {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Make inputs responsive */
+#filter-input,
+#search {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Desktop/Tablet (> 768px) */
+@media screen and (min-width: 769px) {
+    body {
+        padding: 20px;
+    }
+
+    #container {
+        max-width: 800px;
+        padding: 20px;
+    }
+}
+
+/* Tablet and below (≤ 768px) */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    #container {
+        padding: 12px;
+    }
+
+    h1 {
+        font-size: 20px;
+        flex-wrap: wrap;
+    }
+
+    h2 {
+        font-size: 1.3em;
+    }
+
+    h3 {
+        font-size: 1.1em;
+    }
+
+    .logo-icon {
+        width: 50px;
+        margin-right: 10px;
+    }
+
+    /* Make navigation wrap on smaller screens */
+    nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    nav ul li {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    /* Adjust event sections */
+    #general-events,
+    #training-events,
+    #search-results {
+        padding: var(--spacing-medium);
+        margin-top: var(--spacing-medium);
+    }
+
+    /* Event time column */
+    .event-time {
+        width: 90px;
+        font-size: 0.9em;
+    }
+
+    /* Info message */
+    #info-message {
+        font-size: 0.85em;
+        padding: 10px 12px;
+    }
+
+    /* Filter input */
+    #filter-search {
+        margin: 12px 0;
+    }
+
+    #filter-input,
+    #search {
+        font-size: 0.95em;
+    }
+}
+
+/* Mobile (≤ 480px) */
+@media screen and (max-width: 480px) {
+    body {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    #container {
+        padding: 8px;
+    }
+
+    h1 {
+        font-size: 18px;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    h3 {
+        font-size: 1.05em;
+    }
+
+    .logo-icon {
+        width: 40px;
+        margin-right: 8px;
+    }
+
+    nav ul {
+        justify-content: flex-start;
+    }
+
+    nav ul li {
+        padding: 6px 8px;
+        font-size: 0.85em;
+    }
+
+    #general-events,
+    #training-events,
+    #search-results {
+        padding: var(--spacing-small);
+    }
+
+    .event-time {
+        width: 75px;
+        font-size: 0.85em;
+    }
+
+    .event-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .event-time {
+        margin-bottom: 4px;
+        width: auto;
+    }
+
+    #info-message {
+        font-size: 0.8em;
+        padding: 8px 10px;
+    }
+
+    #filter-input,
+    #search {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+
+    .info-icon {
+        font-size: 1em;
+    }
+
+    /* Make search results more compact */
+    .search-event {
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+
+    .search-event-time {
+        min-width: 160px;
+        font-size: 0.85em;
+    }
+}
+
+/* Extra small devices (≤ 360px) */
+@media screen and (max-width: 360px) {
+    body {
+        font-size: 13px;
+    }
+
+    h1 {
+        font-size: 16px;
+    }
+
+    .logo-icon {
+        width: 36px;
+    }
+
+    nav ul li {
+        padding: 5px 6px;
+        font-size: 0.8em;
+    }
+
+    .event-time {
+        width: 70px;
+        font-size: 0.8em;
+    }
+
+    #filter-input,
+    #search {
+        font-size: 0.85em;
+    }
+}
