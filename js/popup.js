@@ -24,12 +24,13 @@ fetch(messagesUrl)
 function renderTodayDate() {
   const now = new Date();
   const heading = document.querySelector('#event-date');
-  heading.innerHTML = 'Clark College Events <br>' + now.toLocaleDateString(undefined, {
+  const dateStr = now.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
+  heading.innerHTML = 'Clark College Events <br><span class="page-subtitle">' + dateStr + '</span>';
 }
 
 // Get Pacific‐time “now”

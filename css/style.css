@@ -77,12 +77,20 @@ body {
 /* ========== Typography ========== */
 h1 {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-start;
     color: var(--primary-blue);
     font-size: 24px;
     font-weight: 700;
     margin: 0 0 10px 0;
+}
+
+.page-subtitle {
+    font-size: 0.75em;
+    color: #666;
+    font-weight: normal;
+    width: 100%;
 }
 
 h2 {
@@ -112,6 +120,7 @@ a:focus,
 a:hover,
 .search-event-title-wrap a:hover {
     text-decoration: underline;
+    color: var(--primary-blue);
 }
 
 h2 a:link,
@@ -119,6 +128,12 @@ h2 a:visited,
 h2 a:active {
     color: var(--primary-blue);
     text-decoration: none;
+}
+
+h2 a:focus,
+h2 a:hover {
+    color: var(--accent-orange);
+    text-decoration: underline;
 }
 
 /* ========== Containers & Layout ========== */
@@ -182,6 +197,58 @@ ul.changelog li {
     display: list-item;
     list-style-type: disc;
     margin-left: 20px;
+    margin-bottom: var(--spacing-medium);
+}
+
+/* Changelog collapsible sections */
+main details {
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: #fff;
+    overflow: hidden;
+}
+
+main details summary {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--primary-blue);
+    list-style: none;
+    padding: 16px;
+    background-color: #f8f9fa;
+    transition: background-color var(--transition-speed) ease;
+    user-select: none;
+}
+
+main details summary::-webkit-details-marker {
+    display: none;
+}
+
+main details summary::before {
+    content: "▶";
+    display: inline-block;
+    margin-right: 10px;
+    transition: transform var(--transition-speed) ease;
+    font-size: 0.8em;
+}
+
+main details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+main details summary:hover {
+    background-color: #f5f5f5;
+}
+
+main details[open] summary {
+    border-bottom: 1px solid var(--border-color);
+    background-color: #f0f7ff;
+}
+
+main details ul.changelog {
+    padding: 16px;
+    margin: 0;
 }
 
 #devteam {
@@ -206,9 +273,46 @@ ul.changelog li {
     line-height: 1.5;
 }
 
-li {
+/* Event list items - not navigation */
+#general-events li,
+#training-events li {
     display: block;
-    margin-bottom: var(--spacing-medium);
+    margin-bottom: 6px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: #fff;
+    overflow: hidden;
+    transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+#general-events li:hover,
+#training-events li:hover {
+    background-color: #f5f5f5;
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0, 40, 85, 0.1);
+}
+
+/* Disable hover effect when event is expanded */
+#general-events li:has(.event-details.expanded):hover,
+#training-events li:has(.event-details.expanded):hover {
+    background-color: #fff;
+    border-color: var(--border-color);
+    box-shadow: none;
+}
+
+/* Day headers don't need borders - they're styled inline via JS */
+#general-events li[style*="font-weight: bold"],
+#training-events li[style*="font-weight: bold"] {
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+#general-events li[style*="font-weight: bold"]:hover,
+#training-events li[style*="font-weight: bold"]:hover {
+    background: transparent;
+    box-shadow: none;
 }
 
 .event-header {
@@ -216,10 +320,24 @@ li {
     align-items: flex-start;
 }
 
-li a {
+#general-events li a,
+#training-events li a {
     flex-grow: 1;
     text-decoration: none;
     color: #000;
+    outline: none;
+}
+
+#general-events li a:focus,
+#training-events li a:focus {
+    text-decoration: underline;
+    color: var(--accent-orange);
+}
+
+#general-events li:focus-within,
+#training-events li:focus-within {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(0, 40, 85, 0.1);
 }
 
 /* ========== Event Sections ========== */
@@ -305,7 +423,7 @@ a.event-past {
 /* ========== Expandable Event Details ========== */
 .event-details {
     max-height: 0;
-    overflow: hidden;
+    overflow: visible;
     transition: max-height 0.4s ease, margin-top 0.4s ease;
     margin-top: 0;
 }
@@ -315,12 +433,10 @@ a.event-past {
 }
 
 .event-details-content {
-    background: #fff;
-    border: 2px solid var(--secondary-purple);
-    border-radius: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 40, 85, 0.15),
-        0 2px 6px rgba(0, 40, 85, 0.1);
 }
 
 .event-details-content strong {
@@ -489,7 +605,26 @@ main>p {
 /* ========== Search Results Styling ========== */
 .search-event {
     display: block;
-    margin-bottom: var(--spacing-small);
+    margin-bottom: 6px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: #fff;
+    overflow: hidden;
+    transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+.search-event:hover {
+    background-color: #f5f5f5;
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0, 40, 85, 0.1);
+}
+
+/* Disable hover effect when event is expanded */
+.search-event:has(.event-details.expanded):hover {
+    background-color: #fff;
+    border-color: var(--border-color);
+    box-shadow: none;
 }
 
 .search-event-header {
