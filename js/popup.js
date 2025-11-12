@@ -634,8 +634,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchTerm.length === 0) {
       // Show all events and headers if search is empty
       allEventItems.forEach(item => {
-        if (item.style.fontWeight) {
-          // Day headers
+        if (item.classList.contains('date-header')) {
+          // Date headers
           item.style.display = 'list-item';
         } else {
           // Event items
@@ -661,15 +661,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // First pass: filter events and mark them
     allEventItems.forEach(item => {
-      // Skip day headers (they have fontWeight bold)
-      if (item.style.fontWeight) {
-        item.style.display = 'none'; // Hide day headers during search
+      // Skip date headers in first pass
+      if (item.classList.contains('date-header')) {
         return;
       }
 
       // Get event title
-      const titleElement = item.querySelector('.event-title');
+      const titleElement = item.querySelector('a');
       const title = titleElement ? titleElement.textContent.toLowerCase() : '';
 
       // Get event time
@@ -686,6 +686,28 @@ document.addEventListener('DOMContentLoaded', () => {
         details.includes(searchTerm);
 
       item.style.display = matches ? 'block' : 'none';
+    });
+
+    // Second pass: show/hide date headers based on whether they have visible events after them
+    allEventItems.forEach((item, index) => {
+      if (item.classList.contains('date-header')) {
+        // Check if there are any visible events after this date header and before the next date header
+        let hasVisibleEvents = false;
+        for (let i = index + 1; i < allEventItems.length; i++) {
+          const nextItem = allEventItems[i];
+          // Stop when we hit the next date header
+          if (nextItem.classList.contains('date-header')) {
+            break;
+          }
+          // Check if this event is visible
+          if (nextItem.style.display !== 'none') {
+            hasVisibleEvents = true;
+            break;
+          }
+        }
+        // Show the date header only if it has visible events
+        item.style.display = hasVisibleEvents ? 'list-item' : 'none';
+      }
     });
 
     // Update section header visibility
