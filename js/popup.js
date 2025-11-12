@@ -268,9 +268,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
       });
       Object.entries(byDay).forEach(([day, dayEvents]) => {
         const dayLi = document.createElement("li");
-        dayLi.style.fontWeight = "bold";
-        dayLi.style.marginTop = "10px";
-        dayLi.style.color = "#555";
+        dayLi.classList.add("date-header");
         dayLi.textContent = day;
         ul.appendChild(dayLi);
         dayEvents.forEach(ev => {

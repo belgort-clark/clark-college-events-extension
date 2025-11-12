@@ -20,6 +20,10 @@
     --transition-speed: 0.2s;
 }
 
+html {
+    scroll-padding-top: 120px;
+}
+
 /* ========== Accessibility ========== */
 .visually-hidden {
     position: absolute;
@@ -95,12 +99,16 @@ h1 {
 
 h2 {
     color: var(--primary-blue);
-    border-bottom: 1px solid var(--border-color);
 }
 
 h3 {
     color: var(--primary-blue);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--primary-blue);
+    padding-bottom: 8px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: 700;
 }
 
 .version {
@@ -132,7 +140,7 @@ h2 a:active {
 
 h2 a:focus,
 h2 a:hover {
-    color: var(--accent-orange);
+    color: var(--primary-blue);
     text-decoration: underline;
 }
 
@@ -246,6 +254,19 @@ main details[open] summary {
     background-color: #f0f7ff;
 }
 
+/* Changelog-specific summary styling */
+body.changelog-page main details summary {
+    background-color: #fafafa;
+}
+
+body.changelog-page main details summary:hover {
+    background-color: #f0f0f0;
+}
+
+body.changelog-page main details[open] summary {
+    background-color: #e8e8e8;
+}
+
 main details ul.changelog {
     padding: 16px;
     margin: 0;
@@ -303,16 +324,33 @@ main details ul.changelog {
 
 /* Day headers don't need borders - they're styled inline via JS */
 #general-events li[style*="font-weight: bold"],
-#training-events li[style*="font-weight: bold"] {
+#training-events li[style*="font-weight: bold"],
+.date-header {
     border: none;
     background: transparent;
     padding: 0;
 }
 
 #general-events li[style*="font-weight: bold"]:hover,
-#training-events li[style*="font-weight: bold"]:hover {
+#training-events li[style*="font-weight: bold"]:hover,
+.date-header:hover {
     background: transparent;
     box-shadow: none;
+}
+
+/* Date headers styling */
+.date-header {
+    font-weight: 700;
+    font-size: 0.85em;
+    color: #fff !important;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding: 8px 12px !important;
+    background: var(--primary-blue) !important;
+    border-radius: var(--border-radius-small);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none !important;
 }
 
 .event-header {
@@ -331,7 +369,7 @@ main details ul.changelog {
 #general-events li a:focus,
 #training-events li a:focus {
     text-decoration: underline;
-    color: var(--accent-orange);
+    color: var(--primary-blue);
 }
 
 #general-events li:focus-within,
@@ -682,21 +720,38 @@ main>p {
 }
 
 /* ========== Navigation ========== */
-nav {
+.sticky-nav-wrapper {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 101;
+    background: transparent;
+    padding-bottom: 15px;
+}
+
+nav+main {
+    margin-top: 25px;
+}
+
+nav {
+    position: relative;
+    background: transparent;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 nav ul {
     margin-left: 0;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     list-style-type: none;
     background: #002855;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    box-shadow: var(--box-shadow),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
 }
 
 nav ul li {
@@ -725,29 +780,38 @@ nav ul li a:focus {
 
 /* ========== Info Message ========== */
 #info-message {
-    text-align: left;
-    padding: 12px 10px;
-    margin: 15px 0;
-    font-size: 0.9em;
-    color: var(--text-medium);
-    background: #f9f9f9;
-    border-radius: var(--border-radius);
-    border: 1px solid #e0e0e0;
-    box-shadow: var(--box-shadow);
+    position: relative;
+    text-align: center;
+    padding: 12px 14px 10px 14px;
+    margin: -1px auto 0 auto;
+    width: 65%;
+    font-size: 0.75em;
+    color: #333;
+    background: #e8e8e8;
+    border-radius: 0 0 16px 16px;
+    border: none;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15),
+        0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
 }
 
 #info-message a {
     color: var(--primary-blue);
     text-decoration: none;
     font-weight: 600;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.2s ease;
+    padding: 0 8px;
+    transition: all 0.2s ease;
 }
 
 #info-message a:hover,
 #info-message a:focus {
-    color: var(--accent-orange);
-    border-bottom-color: var(--accent-orange);
+    text-decoration: underline;
+}
+
+.nav-divider {
+    color: #999;
+    font-weight: 300;
+    padding: 0 4px;
 }
 
 /* ========== Quick Navigation ========== */
@@ -767,7 +831,7 @@ nav ul li a:focus {
 
 #quick-nav a:hover,
 #quick-nav a:focus {
-    color: var(--accent-orange);
+    color: var(--primary-blue);
 }
 
 #quick-nav span {
