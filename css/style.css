@@ -104,12 +104,14 @@ h2 {
 
 h3 {
     color: var(--primary-blue);
-    border-bottom: 2px solid var(--primary-blue);
-    padding-bottom: 8px;
+    background-color: #e8f0f7;
+    padding: 10px 12px;
     margin-top: 20px;
     margin-bottom: 12px;
     font-size: 1.1em;
     font-weight: 700;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .version {
@@ -827,7 +829,7 @@ nav ul li a:focus {
 }
 
 .nav-divider {
-    color: #999;
+    color: #555;
     font-weight: 300;
     padding: 0 4px;
 }
