@@ -99,6 +99,7 @@ h1 {
 
 h2 {
     color: var(--primary-blue);
+    margin-bottom: 8px;
 }
 
 h3 {
@@ -732,6 +733,23 @@ nav+main {
     margin-top: 25px;
 }
 
+.sticky-nav-wrapper+main {
+    margin-top: 0px;
+}
+
+.sticky-nav-wrapper+main h2:first-child,
+.sticky-nav-wrapper+main section h2:first-child {
+    margin-top: 6px;
+}
+
+.sticky-nav-wrapper+main details:first-child {
+    margin-top: 6px;
+}
+
+.sticky-nav-wrapper+main p:first-child {
+    margin-top: 6px;
+}
+
 nav {
     position: relative;
     background: transparent;
@@ -747,7 +765,7 @@ nav ul {
     justify-content: flex-start;
     list-style-type: none;
     background: #002855;
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border-radius: 0 0 8px 8px;
     box-shadow: var(--box-shadow),
         0 4px 8px rgba(0, 0, 0, 0.2);
     position: relative;

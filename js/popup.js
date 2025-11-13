@@ -603,28 +603,69 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSectionVisibility() {
     const generalEvents = document.getElementById('general-events');
     const trainingEvents = document.getElementById('training-events');
+    const filterInput = document.getElementById('filter-input');
+    const isFiltering = filterInput && filterInput.value.trim().length > 0;
 
-    // Check general events
-    if (generalEvents) {
-      const visibleGeneralItems = Array.from(generalEvents.querySelectorAll('li')).filter(li => {
-        return li.style.display !== 'none' && !li.style.fontWeight; // Exclude day headers
-      });
-      const headers = generalEvents.querySelectorAll('h2');
+    // Helper function to update visibility for a section
+    function updateSection(container) {
+      if (!container) return;
+
+      // Always keep section h2 and description paragraph visible
+      const headers = container.querySelectorAll('h2');
       headers.forEach(h => {
-        h.style.display = visibleGeneralItems.length > 0 ? 'block' : 'none';
+        h.style.display = 'block';
+      });
+
+      // Always show section description paragraph (first p after h2)
+      const sectionElement = container.querySelector('section');
+      if (sectionElement) {
+        const descParagraph = sectionElement.querySelector('h2 + p');
+        if (descParagraph && descParagraph.textContent !== 'No scheduled events') {
+          descParagraph.style.display = 'block';
+        }
+      }
+
+      // Get all h3 headers in this section
+      const h3Headers = container.querySelectorAll('h3');
+
+      h3Headers.forEach(h3 => {
+        // Find the next element after this h3
+        let nextElement = h3.nextElementSibling;
+
+        if (!nextElement) {
+          // No next element, hide the h3
+          h3.style.display = 'none';
+          return;
+        }
+
+        // Case 1: h3 followed by "No scheduled events" paragraph (no ul exists)
+        if (nextElement.tagName === 'P' && nextElement.textContent === 'No scheduled events') {
+          // Always show the h3, but hide the "No scheduled events" message when filtering
+          h3.style.display = 'block';
+          nextElement.style.display = isFiltering ? 'none' : 'block';
+          return;
+        }
+
+        // Case 2: h3 followed by ul
+        if (nextElement.tagName === 'UL') {
+          // Check if this ul has any visible event items (not date headers)
+          const visibleEvents = Array.from(nextElement.querySelectorAll('li')).filter(li => {
+            return li.style.display !== 'none' && !li.classList.contains('date-header');
+          });
+
+          // Always show the h3, hide the ul only if no visible events
+          h3.style.display = 'block';
+          nextElement.style.display = visibleEvents.length === 0 ? 'none' : 'block';
+          return;
+        }
+
+        // Case 3: unexpected structure - hide the h3
+        h3.style.display = 'none';
       });
     }
 
-    // Check training events
-    if (trainingEvents) {
-      const visibleTrainingItems = Array.from(trainingEvents.querySelectorAll('li')).filter(li => {
-        return li.style.display !== 'none' && !li.style.fontWeight; // Exclude day headers
-      });
-      const headers = trainingEvents.querySelectorAll('h2');
-      headers.forEach(h => {
-        h.style.display = visibleTrainingItems.length > 0 ? 'block' : 'none';
-      });
-    }
+    updateSection(generalEvents);
+    updateSection(trainingEvents);
   }
 
   // Function to filter events
@@ -642,9 +683,12 @@ document.addEventListener('DOMContentLoaded', () => {
           item.style.display = 'block';
         }
       });
-      // Show all section headers and "No scheduled events" messages
-      document.querySelectorAll('#general-events h2, #training-events h2').forEach(h => {
+      // Show all section headers, h3 subsection headers, uls, and "No scheduled events" messages
+      document.querySelectorAll('#general-events h2, #training-events h2, #general-events h3, #training-events h3').forEach(h => {
         h.style.display = 'block';
+      });
+      document.querySelectorAll('#general-events ul, #training-events ul').forEach(ul => {
+        ul.style.display = 'block';
       });
       document.querySelectorAll('#general-events p, #training-events p').forEach(p => {
         if (p.textContent === 'No scheduled events') {

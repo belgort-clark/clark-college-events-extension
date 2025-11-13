@@ -26,19 +26,47 @@
             </h1>
         </header>
 
-        <nav>
-            <ul>
-                <li><a href="popup.html">🏡 Home</a></li>
-                <li><a href="search.html">🔍 Search Events</a></li>
-                <li><a href="help.html">🛟 Help & FAQ</a></li>
-                <li><a href="about.html">ℹ️ About</a></li>
-                <li><a href="changelog.html" id="active-page">📋 Change Log</a>
-                </li>
-            </ul>
-        </nav>
+        <div class="sticky-nav-wrapper">
+            <nav>
+                <ul>
+                    <li><a href="popup.html">🏡 Home</a></li>
+                    <li><a href="search.html">🔍 Search Events</a></li>
+                    <li><a href="help.html">🛟 Help & FAQ</a></li>
+                    <li><a href="about.html">ℹ️ About</a></li>
+                    <li><a href="changelog.html" id="active-page">📋 Change
+                            Log</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
         <main>
             <details open>
+                <summary>Version 1.5.9</summary>
+                <ul class="changelog">
+                    <li>🎨 <strong>Navigation Design Update:</strong> Removed
+                        rounded corners from top of navigation menu and added
+                        subtle rounded bottom corners for a cleaner, more modern
+                        look</li>
+                    <li>📌 <strong>Sticky Navigation Across All Pages:</strong>
+                        Navigation now stays fixed at the top when scrolling on
+                        Help, About, Search Events, and Changelog pages for
+                        consistent user experience</li>
+                    <li>📏 <strong>Improved Content Spacing:</strong> Optimized
+                        spacing between navigation and main content across all
+                        pages for better visual hierarchy and readability</li>
+                    <li>🔍 <strong>Enhanced Filtering Display:</strong> Fixed
+                        filtering to properly show/hide section headers (Today,
+                        Tomorrow, etc.) while maintaining clean layout and
+                        hiding empty "No scheduled events" messages during
+                        searches</li>
+                    <li>✨ <strong>Reduced H2 Margins:</strong> Decreased bottom
+                        margin on h2 headers from 10px to 8px for tighter, more
+                        compact layout</li>
+                </ul>
+            </details>
+
+            <details>
                 <summary>Version 1.5.8</summary>
                 <ul class="changelog">
                     <li>🔧 <strong>Minor Updates:</strong> Code refinements and
