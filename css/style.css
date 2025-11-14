@@ -103,8 +103,8 @@ h2 {
 }
 
 h3 {
-    color: var(--primary-blue);
-    background-color: #e8f0f7;
+    color: #fff;
+    background-color: #002855;
     padding: 10px 12px;
     margin-top: 20px;
     margin-bottom: 12px;
@@ -345,11 +345,11 @@ main details ul.changelog {
 .date-header {
     font-weight: 700;
     font-size: 0.85em;
-    color: #fff !important;
+    color: var(--primary-blue) !important;
     margin-top: 20px;
     margin-bottom: 10px;
     padding: 8px 12px !important;
-    background: var(--primary-blue) !important;
+    background: #e8f0f7 !important;
     border-radius: var(--border-radius-small);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -866,7 +866,7 @@ nav ul li a:focus {
     }
 
     50% {
-        box-shadow: 0 0 6px rgba(255, 162, 0, 0.6);
+        box-shadow: 0 0 10px rgba(255, 162, 0, 0.6);
     }
 
     100% {
@@ -893,7 +893,7 @@ nav ul li a:focus {
     }
 
     50% {
-        box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.6);
     }
 
     100% {
