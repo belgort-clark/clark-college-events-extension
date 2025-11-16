@@ -24,6 +24,7 @@ fetch(messagesUrl)
 function renderTodayDate() {
   const now = new Date();
   const heading = document.querySelector('#event-date');
+  if (!heading) return; // No header element on this page
   const dateStr = now.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
@@ -252,6 +253,18 @@ function renderUpcomingEventsList(ul, events, parentElement) {
       linkEl.textContent = ev.title;
       if (ev.isPast) linkEl.classList.add("event-past");
 
+      // Add keyboard accessibility for screen readers (Ctrl/Cmd+Enter to expand details)
+      linkEl.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          // Trigger the button click to expand details
+          setTimeout(() => {
+            const btn = linkEl.parentElement.querySelector(".info-icon");
+            if (btn) btn.click();
+          }, 0);
+        }
+      });
+
       const btn = document.createElement("button");
       btn.className = "info-icon";
       btn.setAttribute("aria-label", "More information");
@@ -392,6 +405,18 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
       linkEl.rel = "noopener noreferrer";
       linkEl.textContent = ev.title;
       if (ev.isPast) linkEl.classList.add("event-past");
+
+      // Add keyboard accessibility for screen readers (Ctrl/Cmd+Enter to expand details)
+      linkEl.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          // Trigger the button click to expand details
+          setTimeout(() => {
+            const btn = linkEl.parentElement.querySelector(".info-icon");
+            if (btn) btn.click();
+          }, 0);
+        }
+      });
 
       const btn = document.createElement("button");
       btn.className = "info-icon";

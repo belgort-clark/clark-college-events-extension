@@ -533,7 +533,7 @@ a.event-past {
 /* ========== Expandable Event Details ========== */
 .event-details {
     max-height: 0;
-    overflow: visible;
+    overflow: hidden;
     transition: max-height 0.4s ease, margin-top 0.4s ease;
     margin-top: 0;
 }
