@@ -30,7 +30,7 @@ function renderTodayDate() {
     day: 'numeric',
     year: 'numeric'
   });
-  heading.innerHTML = 'Clark College Events <br><span class="page-subtitle">' + dateStr + '</span>';
+  heading.innerHTML = 'Clark College Events';
 }
 
 // Get Pacific‐time “now”
@@ -215,6 +215,97 @@ function parseRss(text, replacementBaseUrl) {
   return { todayEarlierEvents, todayUpcomingEvents, tomorrowEvents, upcomingEvents };
 }
 
+// Helper function to render upcoming events list with day grouping
+function renderUpcomingEventsList(ul, events, parentElement) {
+  // Group events by day
+  const byDay = {};
+  events.forEach(ev => {
+    const dayKey = ev.date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    if (!byDay[dayKey]) byDay[dayKey] = [];
+    byDay[dayKey].push(ev);
+  });
+
+  Object.entries(byDay).forEach(([day, dayEvents]) => {
+    const dayLi = document.createElement("li");
+    dayLi.classList.add("date-header");
+    dayLi.textContent = day;
+    ul.appendChild(dayLi);
+
+    dayEvents.forEach(ev => {
+      const li = document.createElement("li");
+
+      if (ev.isSoon) {
+        li.classList.add("upcoming-soon");
+        li.dataset.startTime = ev.date.getTime();
+      }
+      if (ev.isInProgress) {
+        li.classList.add("event-in-progress");
+      }
+
+      const ts = document.createElement("span");
+      ts.className = "event-time";
+      ts.textContent = ev.timeStr;
+      const linkEl = document.createElement("a");
+      linkEl.href = ev.link;
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
+      linkEl.textContent = ev.title;
+      if (ev.isPast) linkEl.classList.add("event-past");
+
+      const btn = document.createElement("button");
+      btn.className = "info-icon";
+      btn.setAttribute("aria-label", "More information");
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+
+      const detailsContainer = document.createElement("div");
+      detailsContainer.className = "event-details";
+
+      detailsContainer.innerHTML = `
+        <div class="event-details-content">
+          <div><strong>${ev.title}</strong></div>
+          <div>${ev.description}</div>
+        </div>
+      `;
+
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const isExpanded = detailsContainer.classList.contains("expanded");
+
+        // Close all other expanded details
+        document.querySelectorAll(".event-details.expanded").forEach(el => {
+          el.classList.remove("expanded");
+          el.style.maxHeight = null;
+        });
+        document.querySelectorAll(".info-icon").forEach(ic => {
+          ic.classList.remove("active");
+          ic.setAttribute("aria-expanded", "false");
+          ic.querySelector("i").className = "fa-solid fa-chevron-down";
+        });
+
+        if (!isExpanded) {
+          btn.classList.add("active");
+          detailsContainer.classList.add("expanded");
+          btn.setAttribute("aria-expanded", "true");
+          btn.querySelector("i").className = "fa-solid fa-chevron-up";
+          detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
+        }
+      });
+
+      const eventHeader = document.createElement("div");
+      eventHeader.className = "event-header";
+      eventHeader.appendChild(ts);
+      eventHeader.appendChild(linkEl);
+      eventHeader.appendChild(btn);
+      li.appendChild(eventHeader);
+      li.appendChild(detailsContainer);
+      ul.appendChild(li);
+    });
+  });
+
+  parentElement.appendChild(ul);
+}
+
 // Render sections
 function renderEventSection(containerId, sectionTitle, descriptionText, data, sectionLinkUrl, showFuture) {
   const container = document.getElementById(containerId);
@@ -243,6 +334,32 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   // sub‐lists
   function renderList(label, events, allowEmpty) {
     if (!events.length && !allowEmpty) return;
+
+    // Check if this is the "Upcoming Events" section - make it collapsible
+    const isUpcomingEvents = label.startsWith("Upcoming Events");
+
+    if (isUpcomingEvents) {
+      const details = document.createElement("details");
+      // Collapsed by default (no 'open' attribute)
+      const summary = document.createElement("summary");
+      summary.textContent = label;
+      details.appendChild(summary);
+      section.appendChild(details);
+
+      if (!events.length) {
+        const msg = document.createElement("p");
+        msg.textContent = "No scheduled events";
+        details.appendChild(msg);
+        return;
+      }
+
+      const ul = document.createElement("ul");
+      // Continue rendering inside details element
+      renderUpcomingEventsList(ul, events, details);
+      return;
+    }
+
+    // For non-upcoming sections, render as before
     const h3 = document.createElement("h3");
     h3.textContent = label;
     section.appendChild(h3);
@@ -256,202 +373,95 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
     const ul = document.createElement("ul");
 
-    // For 'Upcoming Events (next 14 days)', group by day and show day name
-    if (label.startsWith("Upcoming Events")) {
-      // Group events by day
-      const byDay = {};
-      events.forEach(ev => {
-        // Format: Thursday, August 28, 2025
-        const dayKey = ev.date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        if (!byDay[dayKey]) byDay[dayKey] = [];
-        byDay[dayKey].push(ev);
-      });
-      Object.entries(byDay).forEach(([day, dayEvents]) => {
-        const dayLi = document.createElement("li");
-        dayLi.classList.add("date-header");
-        dayLi.textContent = day;
-        ul.appendChild(dayLi);
-        dayEvents.forEach(ev => {
-          const li = document.createElement("li");
+    // Render events for non-upcoming sections (Today, Tomorrow)
+    events.forEach(ev => {
+      const li = document.createElement("li");
+      if (ev.isSoon) {
+        li.classList.add("upcoming-soon");
+        li.dataset.startTime = ev.date.getTime();
+      }
+      if (ev.isInProgress) {
+        li.classList.add("event-in-progress");
+      }
+      const ts = document.createElement("span");
+      ts.className = "event-time";
+      ts.textContent = ev.timeStr;
+      const linkEl = document.createElement("a");
+      linkEl.href = ev.link;
+      linkEl.target = "_blank";
+      linkEl.rel = "noopener noreferrer";
+      linkEl.textContent = ev.title;
+      if (ev.isPast) linkEl.classList.add("event-past");
 
-          if (ev.isSoon) {
-            li.classList.add("upcoming-soon");
-            li.dataset.startTime = ev.date.getTime();
-          }
-          if (ev.isInProgress) {
-            li.classList.add("event-in-progress");
-          }
-          const ts = document.createElement("span");
-          ts.className = "event-time";
-          ts.textContent = ev.timeStr;
-          const linkEl = document.createElement("a");
-          linkEl.href = ev.link;
-          linkEl.target = "_blank";
-          linkEl.rel = "noopener noreferrer";
-          linkEl.textContent = ev.title;
-          if (ev.isPast) linkEl.classList.add("event-past");
+      const btn = document.createElement("button");
+      btn.className = "info-icon";
+      btn.setAttribute("aria-label", "More information");
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
 
-          const btn = document.createElement("button");
-          btn.className = "info-icon";
-          btn.setAttribute("aria-label", "More information");
-          btn.setAttribute("aria-expanded", "false");
-          btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+      // Create expandable details container
+      const detailsContainer = document.createElement("div");
+      detailsContainer.className = "event-details";
 
-          // Create expandable details container
-          const detailsContainer = document.createElement("div");
-          detailsContainer.className = "event-details";
+      // Insert Location before Web Area Keywords
+      // COMMENTED OUT FOR NOW
+      // let descWithLocation = ev.description;
+      // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
+      //   descWithLocation = descWithLocation.replace(
+      //     '<b>Web Area Keywords</b>',
+      //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
+      //   );
+      // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
+      //   descWithLocation = descWithLocation.replace(
+      //     '<b>Event Locator</b>',
+      //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
+      //   );
+      // } else {
+      //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
+      // }
 
-          // Insert Location before Web Area Keywords
-          // COMMENTED OUT FOR NOW
-          // let descWithLocation = ev.description;
-          // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-          //   descWithLocation = descWithLocation.replace(
-          //     '<b>Web Area Keywords</b>',
-          //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
-          //   );
-          // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-          //   descWithLocation = descWithLocation.replace(
-          //     '<b>Event Locator</b>',
-          //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
-          //   );
-          // } else {
-          //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
-          // }
-
-          detailsContainer.innerHTML = `
-            <div class="event-details-content">
-              <div><strong>${ev.title}</strong></div>
-              <div>${ev.description}</div>
-            </div>
-          `;
-
-          btn.addEventListener("click", e => {
-            e.stopPropagation();
-            const isExpanded = detailsContainer.classList.contains("expanded");
-
-            // Close all other expanded details
-            document.querySelectorAll(".event-details.expanded")
-              .forEach(d => {
-                d.classList.remove("expanded");
-                d.style.maxHeight = null;
-              });
-            document.querySelectorAll(".info-icon")
-              .forEach(ic => {
-                ic.classList.remove("active");
-                ic.setAttribute("aria-expanded", "false");
-                ic.querySelector("i").className = "fa-solid fa-chevron-down";
-              });
-
-            // If this item wasn't expanded, expand it now
-            if (!isExpanded) {
-              btn.classList.add("active");
-              btn.setAttribute("aria-expanded", "true");
-              btn.querySelector("i").className = "fa-solid fa-chevron-up";
-              detailsContainer.classList.add("expanded");
-              detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
-            }
-          });
-
-          // Wrap time, link, and button in a container
-          const eventHeader = document.createElement("div");
-          eventHeader.className = "event-header";
-          eventHeader.append(ts, linkEl, btn);
-
-          li.appendChild(eventHeader);
-          li.appendChild(detailsContainer);
-          ul.appendChild(li);
-        });
-      });
-    } else {
-      events.forEach(ev => {
-        const li = document.createElement("li");
-        if (ev.isSoon) {
-          li.classList.add("upcoming-soon");
-          li.dataset.startTime = ev.date.getTime();
-        }
-        if (ev.isInProgress) {
-          li.classList.add("event-in-progress");
-        }
-        const ts = document.createElement("span");
-        ts.className = "event-time";
-        ts.textContent = ev.timeStr;
-        const linkEl = document.createElement("a");
-        linkEl.href = ev.link;
-        linkEl.target = "_blank";
-        linkEl.rel = "noopener noreferrer";
-        linkEl.textContent = ev.title;
-        if (ev.isPast) linkEl.classList.add("event-past");
-
-        const btn = document.createElement("button");
-        btn.className = "info-icon";
-        btn.setAttribute("aria-label", "More information");
-        btn.setAttribute("aria-expanded", "false");
-        btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
-
-        // Create expandable details container
-        const detailsContainer = document.createElement("div");
-        detailsContainer.className = "event-details";
-
-        // Insert Location before Web Area Keywords
-        // COMMENTED OUT FOR NOW
-        // let descWithLocation = ev.description;
-        // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-        //   descWithLocation = descWithLocation.replace(
-        //     '<b>Web Area Keywords</b>',
-        //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
-        //   );
-        // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-        //   descWithLocation = descWithLocation.replace(
-        //     '<b>Event Locator</b>',
-        //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
-        //   );
-        // } else {
-        //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
-        // }
-
-        detailsContainer.innerHTML = `
+      detailsContainer.innerHTML = `
           <div class="event-details-content">
             <div><strong>${ev.title}</strong></div>
             <div>${ev.description}</div>
           </div>
         `;
 
-        btn.addEventListener("click", e => {
-          e.stopPropagation();
-          const isExpanded = detailsContainer.classList.contains("expanded");
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const isExpanded = detailsContainer.classList.contains("expanded");
 
-          // Close all other expanded details
-          document.querySelectorAll(".event-details.expanded")
-            .forEach(d => {
-              d.classList.remove("expanded");
-              d.style.maxHeight = null;
-            });
-          document.querySelectorAll(".info-icon")
-            .forEach(ic => {
-              ic.classList.remove("active");
-              ic.setAttribute("aria-expanded", "false");
-              ic.querySelector("i").className = "fa-solid fa-chevron-down";
-            });
+        // Close all other expanded details
+        document.querySelectorAll(".event-details.expanded")
+          .forEach(d => {
+            d.classList.remove("expanded");
+            d.style.maxHeight = null;
+          });
+        document.querySelectorAll(".info-icon")
+          .forEach(ic => {
+            ic.classList.remove("active");
+            ic.setAttribute("aria-expanded", "false");
+            ic.querySelector("i").className = "fa-solid fa-chevron-down";
+          });
 
-          if (!isExpanded) {
-            btn.classList.add("active");
-            btn.setAttribute("aria-expanded", "true");
-            btn.querySelector("i").className = "fa-solid fa-chevron-up";
-            detailsContainer.classList.add("expanded");
-            detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
-          }
-        });
-
-        // Wrap time, link, and button in a container
-        const eventHeader = document.createElement("div");
-        eventHeader.className = "event-header";
-        eventHeader.append(ts, linkEl, btn);
-
-        li.appendChild(eventHeader);
-        li.appendChild(detailsContainer);
-        ul.appendChild(li);
+        if (!isExpanded) {
+          btn.classList.add("active");
+          btn.setAttribute("aria-expanded", "true");
+          btn.querySelector("i").className = "fa-solid fa-chevron-up";
+          detailsContainer.classList.add("expanded");
+          detailsContainer.style.maxHeight = detailsContainer.scrollHeight + "px";
+        }
       });
-    }
+
+      // Wrap time, link, and button in a container
+      const eventHeader = document.createElement("div");
+      eventHeader.className = "event-header";
+      eventHeader.append(ts, linkEl, btn);
+
+      li.appendChild(eventHeader);
+      li.appendChild(detailsContainer);
+      ul.appendChild(li);
+    });
     section.appendChild(ul);
   }
 
@@ -672,7 +682,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterEvents() {
     const searchTerm = filterInput.value.toLowerCase().trim();
 
+    // Get all details elements (for collapsible sections like Upcoming Events)
+    const detailsElements = document.querySelectorAll('.event-section details');
+
     if (searchTerm.length === 0) {
+      // Collapse the Upcoming Events section when no filter
+      detailsElements.forEach(details => {
+        details.removeAttribute('open');
+      });
+
       // Show all events and headers if search is empty
       allEventItems.forEach(item => {
         if (item.classList.contains('date-header')) {
@@ -697,6 +715,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       return;
     }
+
+    // Expand the Upcoming Events section when filtering
+    detailsElements.forEach(details => {
+      details.setAttribute('open', '');
+    });
 
     // Hide "No scheduled events" messages when filtering
     document.querySelectorAll('#general-events p, #training-events p').forEach(p => {
@@ -751,6 +774,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Show the date header only if it has visible events
         item.style.display = hasVisibleEvents ? 'list-item' : 'none';
+      }
+    });
+
+    // After filtering, check if details elements have visible events before expanding
+    detailsElements.forEach(details => {
+      const ul = details.querySelector('ul');
+      if (ul) {
+        const visibleItems = Array.from(ul.querySelectorAll('li')).filter(li =>
+          !li.classList.contains('date-header') && li.style.display !== 'none'
+        );
+        // Only expand if there are visible events
+        if (visibleItems.length > 0) {
+          details.setAttribute('open', '');
+        } else {
+          details.removeAttribute('open');
+        }
       }
     });
 

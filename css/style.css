@@ -70,10 +70,10 @@ html {
 
 /* ========== Base Styles ========== */
 body {
-    background: var(--background-light);
+    background: #f5f5f5;
     font-family: var(--font-family);
-    font-size: 18px;
-    margin: 10px;
+    font-size: 16px;
+    margin: 0;
     height: 600px;
     width: 740px;
 }
@@ -82,18 +82,29 @@ body {
 h1 {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
+    align-items: flex-end;
+    justify-content: center;
     color: var(--primary-blue);
     font-size: 24px;
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0;
+    background-color: #e8e8e8;
+    padding: 8px 16px;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#event-date {
+    color: var(--primary-blue);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .page-subtitle {
-    font-size: 0.75em;
-    color: #666;
-    font-weight: normal;
+    font-size: 14px;
+    color: #000;
+    font-weight: 700;
     width: 100%;
 }
 
@@ -108,10 +119,60 @@ h3 {
     padding: 10px 12px;
     margin-top: 20px;
     margin-bottom: 12px;
-    font-size: 1.1em;
+    font-size: 20px;
     font-weight: 700;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+/* Collapsible Upcoming Events Section */
+.event-section details {
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+.event-section details summary {
+    color: #fff;
+    background-color: #002855;
+    padding: 10px 12px;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.event-section details summary::-webkit-details-marker {
+    display: none;
+}
+
+.event-section details summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.event-section details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.event-section details[open] summary {
+    background-color: #002855;
+}
+
+.event-section details summary:hover {
+    background-color: #1a4d7a;
+}
+
+.event-section details ul {
+    margin-top: 12px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .version {
@@ -149,8 +210,7 @@ h2 a:hover {
 
 /* ========== Containers & Layout ========== */
 #container {
-    padding: 14px;
-    padding-bottom: 48px;
+    padding: 0 14px 48px 14px;
 }
 
 footer {
@@ -162,7 +222,7 @@ footer {
 
 footer a {
     color: var(--text-light);
-    font-size: 0.9em;
+    font-size: 14px;
     text-decoration: none;
     transition: color var(--transition-speed) ease;
     margin-left: 15px;
@@ -195,6 +255,7 @@ footer a:focus {
     margin-right: 12px;
     vertical-align: middle;
     filter: drop-shadow(2px 2px 6px rgba(0, 0, 0, 0.2));
+    display: none;
 }
 
 /* ========== List Styles ========== */
@@ -223,7 +284,7 @@ main details {
 main details summary {
     cursor: pointer;
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 20px;
     color: var(--primary-blue);
     list-style: none;
     padding: 16px;
@@ -241,7 +302,7 @@ main details summary::before {
     display: inline-block;
     margin-right: 10px;
     transition: transform var(--transition-speed) ease;
-    font-size: 0.8em;
+    font-size: 14px;
 }
 
 main details[open] summary::before {
@@ -320,9 +381,17 @@ main details ul.changelog {
 /* Disable hover effect when event is expanded */
 #general-events li:has(.event-details.expanded):hover,
 #training-events li:has(.event-details.expanded):hover {
-    background-color: #fff;
-    border-color: var(--border-color);
-    box-shadow: none;
+    background-color: #f5f5f5;
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0, 40, 85, 0.1);
+}
+
+/* Apply hover background when event is expanded */
+#general-events li:has(.event-details.expanded),
+#training-events li:has(.event-details.expanded) {
+    background-color: #f5f5f5;
+    border-color: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(0, 40, 85, 0.1);
 }
 
 /* Day headers don't need borders - they're styled inline via JS */
@@ -344,8 +413,8 @@ main details ul.changelog {
 /* Date headers styling */
 .date-header {
     font-weight: 700;
-    font-size: 0.85em;
-    color: var(--primary-blue) !important;
+    font-size: 14px;
+    color: #001a33 !important;
     margin-top: 20px;
     margin-bottom: 10px;
     padding: 8px 12px !important;
@@ -440,7 +509,7 @@ a.event-past {
     cursor: pointer;
     color: #004785;
     margin-left: 8px;
-    font-size: 1rem;
+    font-size: 20px;
     align-self: center;
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
@@ -484,7 +553,7 @@ a.event-past {
     color: var(--primary-blue);
     display: block;
     margin-bottom: 10px;
-    font-size: 1.05em;
+    font-size: 16px;
 }
 
 .event-details-content div {
@@ -532,7 +601,7 @@ a.event-past {
 .popup-close {
     background: var(--secondary-purple);
     border: none;
-    font-size: 1.2em;
+    font-size: 20px;
     font-weight: bold;
     color: #fff;
     cursor: pointer;
@@ -615,7 +684,7 @@ main>p {
     transform: translateY(-50%);
     background: none;
     border: none;
-    font-size: 1.2em;
+    font-size: 20px;
     color: #555;
     cursor: pointer;
     padding: 0;
@@ -635,7 +704,7 @@ main>p {
 }
 
 .filter-help {
-    font-size: 0.9em;
+    font-size: 14px;
     color: var(--text-light);
     margin-top: 8px;
     margin-bottom: -6px;
@@ -718,7 +787,7 @@ main>p {
     margin-top: 20px;
     color: #002855;
     border-bottom: 1px solid #dadada;
-    font-size: 1.2em;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -760,11 +829,10 @@ nav {
 }
 
 nav ul {
-    margin-left: 0;
-    margin-bottom: 0;
+    margin: 0;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     list-style-type: none;
     background: #002855;
     border-radius: 0 0 8px 8px;
@@ -805,7 +873,7 @@ nav ul li a:focus {
     padding: 12px 14px 10px 14px;
     margin: -1px auto 0 auto;
     width: 65%;
-    font-size: 0.75em;
+    font-size: 14px;
     color: #333;
     background: #e8e8e8;
     border-radius: 0 0 16px 16px;
@@ -839,7 +907,7 @@ nav ul li a:focus {
     text-align: center;
     padding: 6px 0;
     margin: 8px 0;
-    font-size: 0.9em;
+    font-size: 14px;
 }
 
 #quick-nav a {
