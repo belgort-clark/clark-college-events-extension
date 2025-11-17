@@ -119,7 +119,7 @@ h3 {
     padding: 10px 12px;
     margin-top: 20px;
     margin-bottom: 12px;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -427,7 +427,7 @@ main details ul.changelog {
 
 .event-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
 }
 
 #general-events li a,
@@ -844,7 +844,7 @@ nav ul {
 
 nav ul li {
     display: inline-block;
-    padding: 10px 15px;
+    padding: 14px 15px;
     margin: 0;
 }
 
