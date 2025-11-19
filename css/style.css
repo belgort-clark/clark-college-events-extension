@@ -566,6 +566,11 @@ a.event-past {
     margin-bottom: 2px;
 }
 
+/* Hide empty paragraphs with nbsp */
+.event-details-content p:empty {
+    display: none;
+}
+
 /* ========== Pop-ups ========== */
 .event-popup,
 .search-event-popup {
@@ -946,13 +951,11 @@ nav ul li a:focus {
 .upcoming-soon {
     animation: pulse 3s ease-in-out infinite;
     border-radius: 6px;
-    background-color: rgba(255, 162, 0, 0.1);
 }
 
 .event-in-progress {
     animation: inprogress-pulse 3s ease-in-out infinite;
     border-radius: 6px;
-    background-color: rgba(40, 167, 69, 0.1);
 }
 
 @keyframes inprogress-pulse {

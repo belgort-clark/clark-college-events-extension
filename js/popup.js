@@ -45,7 +45,7 @@ function getPacificNow() {
   return new Date(formatter.format(new Date()));
 }
 
-// Format H:MM or “All Day”
+// Format H:MM or "All Day"
 function formatEventTime(date) {
   const h = date.getHours(), m = date.getMinutes();
   if (h === 0 && m === 0) return "All Day";
@@ -142,6 +142,12 @@ function parseRss(text, replacementBaseUrl) {
         .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
         .replace(/(<br\s*\/?>\s*)+$/gi, '')
         .replace(/<div[^>]*>\s*&nbsp;\s*<\/div>/gi, '');
+      // Remove <p>&nbsp;</p> tags (multiple occurrences, with or without attributes)
+      // Handles &nbsp; entity, actual non-breaking space character, and just whitespace
+      // More aggressive: matches any combination of whitespace and nbsp
+      while (/<p[^>]*>[\s\u00A0&nbsp;]*<\/p>/i.test(description)) {
+        description = description.replace(/<p[^>]*>[\s\u00A0&nbsp;]*<\/p>/gi, '');
+      }
       // Remove <br> that immediately follows a </p>
       description = description.replace(/<\/p>\s*<br\s*\/?>/gi, '</p>');
       // Remove <br> that immediately follows a <div> opening tag
@@ -280,6 +286,18 @@ function renderUpcomingEventsList(ul, events, parentElement) {
           <div>${ev.description}</div>
         </div>
       `;
+
+      // Remove <p>&nbsp;</p> tags from the rendered content
+      const contentDiv = detailsContainer.querySelector('.event-details-content');
+      if (contentDiv) {
+        const emptyParas = contentDiv.querySelectorAll('p');
+        emptyParas.forEach(p => {
+          const text = p.textContent.trim();
+          if (text === '' || text === '\u00A0' || text.replace(/\s/g, '') === '') {
+            p.remove();
+          }
+        });
+      }
 
       btn.addEventListener("click", e => {
         e.stopPropagation();
@@ -452,6 +470,18 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
           </div>
         `;
 
+      // Remove <p>&nbsp;</p> tags from the rendered content
+      const contentDiv = detailsContainer.querySelector('.event-details-content');
+      if (contentDiv) {
+        const emptyParas = contentDiv.querySelectorAll('p');
+        emptyParas.forEach(p => {
+          const text = p.textContent.trim();
+          if (text === '' || text === '\u00A0' || text.replace(/\s/g, '') === '') {
+            p.remove();
+          }
+        });
+      }
+
       btn.addEventListener("click", e => {
         e.stopPropagation();
         const isExpanded = detailsContainer.classList.contains("expanded");
@@ -583,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderEventSection(
         "training-events",
         "Employee Training and Development Events",
-        "These events are part of Clark College’s Employee Training and Development programs happening today, tomorrow, and beyond.",
+        "These events are part of Clark College's Employee Training and Development programs happening today, tomorrow, and beyond.",
         train,
         "https://www.clark.edu/tlc/main-schedule.php",
         true

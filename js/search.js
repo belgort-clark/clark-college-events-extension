@@ -72,9 +72,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const li = document.createElement("li");
         li.className = "search-event";
 
-        // pulse upcoming-soon if within next 60m
-        if (evTs > nowPt && evTs <= nowPt + 60 * 60 * 1000) {
+        // Apply state classes for pulsating effects (matching popup.js logic)
+        // "Soon": Events within 60 min before to 30 min after start time (orange pulse)
+        const past60 = nowPt - 60 * 60 * 1000;
+        const next30 = nowPt + 30 * 60 * 1000;
+        const isSoon = evTs >= past60 && evTs <= next30;
+
+        // "In Progress": Events that started and are within 1 hour duration (green pulse)
+        const isInProgress = evTs <= nowPt && nowPt < evTs + 60 * 60 * 1000;
+
+        if (isSoon) {
             li.classList.add("upcoming-soon");
+        }
+        if (isInProgress) {
+            li.classList.add("event-in-progress");
         }
 
         // time
