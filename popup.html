@@ -4,6 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#002855">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Clark Events">
+    <link rel="apple-touch-icon" href="icon_128.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -26,10 +32,22 @@
                     <li><a href="search.html">Search Events</a></li>
                     <li><a href="about.html">About</a></li>
                     <li><a href="changelog.html">Change Log</a></li>
+                    <li id="install-menu-item" style="display: none;">
+                        <button id="install-btn"
+                            aria-label="Add to Home Screen">
+                            <i class="fas fa-plus-circle"></i> Add to Home
+                        </button>
+                    </li>
                 </ul>
             </nav>
 
             <div id="info-message" style="display: none;">
+                <button class="hamburger" aria-label="Toggle navigation menu"
+                    aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
                 <a href="#top">General Events</a>
                 <span class="nav-divider">•</span>
                 <a href="#training-events">Employee Training and Development
@@ -59,6 +77,9 @@
             <span class="loading-text">Getting data from 25Live...</span>
         </div>
     </div>
+    <script src="js/install.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/pull-to-refresh.js"></script>
     <script src="js/popup.js"></script>
 </body>
 

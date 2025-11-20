@@ -25,6 +25,14 @@
     <div id="container">
         <h1 class="visually-hidden">Search Clark College Events</h1>
         <div class="sticky-nav-wrapper">
+            <div id="info-message" style="display: block;">
+                <button class="hamburger" aria-label="Toggle navigation menu"
+                    aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
             <nav>
                 <ul>
                     <li><a href="popup.html">Home</a></li>
@@ -33,6 +41,12 @@
                     </li>
                     <li><a href="about.html">About</a></li>
                     <li><a href="changelog.html">Change Log</a></li>
+                    <li id="install-menu-item" style="display: none;">
+                        <button id="install-btn"
+                            aria-label="Add to Home Screen">
+                            <i class="fas fa-plus-circle"></i> Add to Home
+                        </button>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -63,6 +77,8 @@
             </div>
         </main>
     </div>
+    <script src="js/install.js"></script>
+    <script src="js/navigation.js"></script>
     <script src="js/search.js"></script>
 </body>
 
