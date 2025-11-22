@@ -20,6 +20,66 @@
     --transition-speed: 0.2s;
 }
 
+/* ========== Update Banner ========== */
+#update-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--accent-teal);
+    color: white;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.update-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+    flex-wrap: wrap;
+}
+
+.update-message span {
+    font-weight: 600;
+}
+
+#update-btn,
+#dismiss-update {
+    background: white;
+    color: var(--accent-teal);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-small);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+#update-btn:hover,
+#dismiss-update:hover {
+    transform: scale(1.05);
+}
+
+#dismiss-update {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
 html {
     scroll-padding-top: 120px;
     margin: 0;
@@ -811,6 +871,7 @@ main>p {
     background: #f5f5f5;
     padding-bottom: 0;
     margin-bottom: 15px;
+    display: block;
 }
 
 nav+main {
@@ -839,6 +900,8 @@ nav {
     background: transparent;
     padding-bottom: 0;
     margin-bottom: 0;
+    display: block !important;
+    visibility: visible !important;
 }
 
 nav ul {
@@ -1076,7 +1139,7 @@ nav ul li a:focus {
     }
 
     .sticky-nav-wrapper {
-        display: flex;
+        display: flex !important;
         flex-direction: column-reverse;
         position: relative;
     }

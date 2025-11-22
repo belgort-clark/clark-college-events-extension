@@ -342,6 +342,9 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  // Clear existing content to prevent duplicates
+  container.innerHTML = '';
+
   const section = document.createElement("section");
   section.classList.add("event-section");
 
@@ -542,8 +545,8 @@ setInterval(() => {
   });
 }, 60 * 1000);
 
-// Initialize
-document.addEventListener("DOMContentLoaded", () => {
+// Initialize function
+function initializeHomePage() {
   renderTodayDate();
   const loadingMessages = document.querySelectorAll("#loading-message");
   const loading = loadingMessages[loadingMessages.length - 1];
@@ -645,31 +648,47 @@ document.addEventListener("DOMContentLoaded", () => {
         if (infoMessage) infoMessage.style.display = 'block';
         const filterSearch = document.getElementById('filter-search');
         if (filterSearch) filterSearch.style.display = 'block';
+
+        // Trigger event items collection for filter
+        const collectEvent = new CustomEvent('eventsLoaded');
+        document.dispatchEvent(collectEvent);
       }
     });
-});
+}
+
+// Run on initial load
+document.addEventListener("DOMContentLoaded", initializeHomePage);
 
 // ========== Filter Functionality ==========
-document.addEventListener('DOMContentLoaded', () => {
+// Filter functionality - single instance with state
+let filterState = {
+  allEventItems: [],
+  observer: null
+};
+
+function initializeFilter() {
   const filterInput = document.getElementById('filter-input');
   const clearFilterBtn = document.getElementById('clear-filter');
 
-  if (!filterInput || !clearFilterBtn) return;
+  if (!filterInput || !clearFilterBtn) {
+    console.log('Filter elements not found');
+    return;
+  }
 
-  // Store all event items for filtering
-  let allEventItems = [];
+  console.log('Initializing filter');
 
   // Function to collect all event items
   function collectEventItems() {
-    allEventItems = Array.from(document.querySelectorAll('#general-events li, #training-events li'));
+    filterState.allEventItems = Array.from(document.querySelectorAll('#general-events li, #training-events li'));
+    console.log('Collected event items:', filterState.allEventItems.length);
   }
 
   // Function to hide/show section headers based on visible events
   function updateSectionVisibility() {
     const generalEvents = document.getElementById('general-events');
     const trainingEvents = document.getElementById('training-events');
-    const filterInput = document.getElementById('filter-input');
-    const isFiltering = filterInput && filterInput.value.trim().length > 0;
+    const currentFilterInput = document.getElementById('filter-input');
+    const isFiltering = currentFilterInput && currentFilterInput.value.trim().length > 0;
 
     // Helper function to update visibility for a section
     function updateSection(container) {
@@ -735,7 +754,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function to filter events
   function filterEvents() {
-    const searchTerm = filterInput.value.toLowerCase().trim();
+    // Get fresh reference to filter input in case it was replaced
+    const currentFilterInput = document.getElementById('filter-input');
+    if (!currentFilterInput) return;
+
+    const searchTerm = currentFilterInput.value.toLowerCase().trim();
 
     // Get all details elements (for collapsible sections like Upcoming Events)
     const detailsElements = document.querySelectorAll('.event-section details');
@@ -747,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Show all events and headers if search is empty
-      allEventItems.forEach(item => {
+      filterState.allEventItems.forEach(item => {
         if (item.classList.contains('date-header')) {
           // Date headers
           item.style.display = 'list-item';
@@ -784,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // First pass: filter events and mark them
-    allEventItems.forEach(item => {
+    filterState.allEventItems.forEach(item => {
       // Skip date headers in first pass
       if (item.classList.contains('date-header')) {
         return;
@@ -811,12 +834,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Second pass: show/hide date headers based on whether they have visible events after them
-    allEventItems.forEach((item, index) => {
+    filterState.allEventItems.forEach((item, index) => {
       if (item.classList.contains('date-header')) {
         // Check if there are any visible events after this date header and before the next date header
         let hasVisibleEvents = false;
-        for (let i = index + 1; i < allEventItems.length; i++) {
-          const nextItem = allEventItems[i];
+        for (let i = index + 1; i < filterState.allEventItems.length; i++) {
+          const nextItem = filterState.allEventItems[i];
           // Stop when we hit the next date header
           if (nextItem.classList.contains('date-header')) {
             break;
@@ -852,8 +875,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSectionVisibility();
   }
 
+  // Disconnect old observer if it exists
+  if (filterState.observer) {
+    filterState.observer.disconnect();
+  }
+
   // Collect items when sections are populated
-  const observer = new MutationObserver(() => {
+  filterState.observer = new MutationObserver(() => {
     collectEventItems();
   });
 
@@ -861,26 +889,63 @@ document.addEventListener('DOMContentLoaded', () => {
   const trainingEvents = document.getElementById('training-events');
 
   if (generalEvents) {
-    observer.observe(generalEvents, { childList: true, subtree: true });
+    filterState.observer.observe(generalEvents, { childList: true, subtree: true });
   }
   if (trainingEvents) {
-    observer.observe(trainingEvents, { childList: true, subtree: true });
+    filterState.observer.observe(trainingEvents, { childList: true, subtree: true });
   }
 
-  // Event listeners
-  filterInput.addEventListener('input', filterEvents);
+  // Remove old event listeners by cloning elements
+  const newFilterInput = filterInput.cloneNode(true);
+  filterInput.parentNode.replaceChild(newFilterInput, filterInput);
 
-  clearFilterBtn.addEventListener('click', () => {
-    filterInput.value = '';
-    filterEvents();
-    filterInput.focus();
+  const newClearBtn = clearFilterBtn.cloneNode(true);
+  clearFilterBtn.parentNode.replaceChild(newClearBtn, clearFilterBtn);
+
+  // Event listeners on new elements
+  newFilterInput.addEventListener('input', filterEvents);
+
+  newClearBtn.addEventListener('click', () => {
+    const currentInput = document.getElementById('filter-input');
+    if (currentInput) {
+      currentInput.value = '';
+      filterEvents();
+      currentInput.focus();
+    }
   });
 
   // Clear on Escape key
-  filterInput.addEventListener('keydown', (e) => {
+  newFilterInput.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      filterInput.value = '';
-      filterEvents();
+      const currentInput = document.getElementById('filter-input');
+      if (currentInput) {
+        currentInput.value = '';
+        filterEvents();
+      }
     }
   });
+
+  console.log('Filter event listeners attached');
+
+  // Store reference for event collection
+  filterState.collectEventItems = collectEventItems;
+}
+
+// Single eventsLoaded listener
+document.addEventListener('eventsLoaded', () => {
+  console.log('Events loaded, collecting items...');
+  if (filterState && filterState.collectEventItems) {
+    filterState.collectEventItems();
+  }
+});
+
+// Initialize filter on DOM load
+document.addEventListener('DOMContentLoaded', initializeFilter);
+
+// Listen for home page reload event from router
+document.addEventListener('homePageLoaded', () => {
+  console.log('Home page reloaded, calling initializeHomePage');
+  initializeHomePage();
+  // Re-initialize filter when returning to home page
+  setTimeout(() => initializeFilter(), 200);
 });

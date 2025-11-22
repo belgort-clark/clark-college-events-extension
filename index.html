@@ -10,16 +10,17 @@
         content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Clark Events">
     <link rel="apple-touch-icon" href="icon_128.png">
+    <link rel="manifest" href="pwa-manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700"
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/loading-overlay.css">
-    <title>Home - Clark College Events</title>
+    <title>Clark College Events</title>
 </head>
 
 <body>
@@ -27,11 +28,13 @@
         <h1 class="visually-hidden">Clark College Events</h1>
         <div class="sticky-nav-wrapper">
             <nav>
-                <ul>
-                    <li><a href="popup.html" id="active-page">Home</a></li>
-                    <li><a href="search.html">Search Events</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="changelog.html">Change Log</a></li>
+                <ul id="main-nav">
+                    <li><a href="#home" class="nav-link"
+                            data-page="home">Home</a></li>
+                    <li><a href="#search" class="nav-link"
+                            data-page="search">Search Events</a></li>
+                    <li><a href="#about" class="nav-link"
+                            data-page="about">About</a></li>
                     <li id="install-menu-item" style="display: none;">
                         <button id="install-btn"
                             aria-label="Add to Home Screen">
@@ -41,7 +44,7 @@
                 </ul>
             </nav>
 
-            <div id="info-message" style="display: none;">
+            <div id="info-message" style="display: block;">
                 <button class="hamburger" aria-label="Toggle navigation menu"
                     aria-expanded="false">
                     <span></span>
@@ -50,37 +53,20 @@
                 </button>
                 <a href="#top">General Events</a>
                 <span class="nav-divider">•</span>
-                <a href="#training-events">Employee Training and Development
-                </a>
+                <a href="#training-events">Employee Training and Development</a>
             </div>
         </div>
 
-        <div id="filter-search" style="display: none;">
-            <div class="filter-input-wrapper">
-                <label for="filter-input" class="visually-hidden">Filter events
-                    by keyword</label>
-                <input type="text" id="filter-input"
-                    placeholder="Filter events...">
-                <button id="clear-filter" aria-label="Clear filter"
-                    title="Clear">&times;</button>
-            </div>
-        </div>
-
-        <main role="main" id="main-content"
-            style="opacity:0; transition: opacity 0.4s; position:relative;">
-            <div id="messages" role="alert"></div>
-            <div id="general-events"></div>
-            <div id="training-events"></div>
-        </main>
-        <div id="loading-message" role="status" aria-live="polite">
-            <span class="loading-spinner" aria-hidden="true"></span>
-            <span class="loading-text">Getting data from 25Live...</span>
-        </div>
+        <!-- App content container - pages will be loaded here -->
+        <div id="app-content"></div>
     </div>
+
+    <script src="js/sw-register.js"></script>
     <script src="js/install.js"></script>
-    <script src="js/navigation.js"></script>
+    <script src="js/router.js"></script>
     <script src="js/pull-to-refresh.js"></script>
     <script src="js/popup.js"></script>
+    <script src="js/search.js"></script>
 </body>
 
 </html>

@@ -1,10 +1,13 @@
 // js/search.js
 
-// Wait for DOM
-document.addEventListener("DOMContentLoaded", () => {
+// Initialize search functionality
+function initializeSearch() {
     const searchInput = document.querySelector("#search");
     const clearButton = document.querySelector("#clear-search");
     const resultsContainer = document.querySelector("#search-results");
+
+    // Only initialize if elements exist
+    if (!searchInput || !clearButton || !resultsContainer) return;
 
     // Create separate lists & headers
     const eventList = document.createElement("ul");
@@ -308,4 +311,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".info-icon")
             .forEach(ic => ic.classList.remove("active"));
     });
-});
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', initializeSearch);
+
+// Re-initialize when search page is loaded
+document.addEventListener('searchPageLoaded', initializeSearch);
