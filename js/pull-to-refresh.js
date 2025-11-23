@@ -61,9 +61,19 @@ container.addEventListener('touchend', (e) => {
         refreshIndicator.querySelector('span').textContent = 'Refreshing...';
         refreshIndicator.classList.add('refreshing');
 
-        // Reload the page
         setTimeout(() => {
-            window.location.reload();
+            // Check if online before attempting reload
+            if (navigator.onLine) {
+                // Online - reload (service worker will handle it)
+                location.reload();
+            } else {
+                // Offline - just reset the indicator and show message
+                refreshIndicator.querySelector('span').textContent = 'No internet connection';
+                setTimeout(() => {
+                    refreshIndicator.style.display = 'none';
+                    refreshIndicator.classList.remove('ready', 'refreshing');
+                }, 1500);
+            }
         }, 300);
     } else {
         // Reset indicator

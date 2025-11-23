@@ -1,7 +1,8 @@
-const CACHE_NAME = 'clark-events-v2.0.3';
+const CACHE_NAME = 'clark-events-v2.1.3';
 const URLS_TO_CACHE = [
     './',
     './index.html',
+    './offline.html',
     './css/style.css',
     './css/loading-overlay.css',
     './js/router.js',
@@ -75,7 +76,11 @@ self.addEventListener('fetch', (event) => {
                         if (response) {
                             return response;
                         }
-                        // If not in cache, return a generic offline message
+                        // If not in cache and requesting HTML, return offline page
+                        if (event.request.headers.get('accept').includes('text/html')) {
+                            return caches.match('./offline.html');
+                        }
+                        // For non-HTML requests, return a simple message
                         return new Response('Offline - content not available', {
                             status: 503,
                             statusText: 'Service Unavailable',
