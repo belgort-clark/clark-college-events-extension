@@ -554,6 +554,47 @@ function initializeHomePage() {
   let globalTimeout = null;
   const messages = document.getElementById('messages');
 
+  // Clear any existing error state and content when re-initializing
+  if (messages) {
+    messages.removeAttribute('data-timeout-error');
+    // If there's a timeout error message, clear it but preserve GitHub messages
+    if (messages.getAttribute('data-timeout-error') === 'true' ||
+      messages.innerHTML.includes('Unable to load events')) {
+      // Re-fetch GitHub messages
+      const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";
+      fetch(messagesUrl)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+          return response.json();
+        })
+        .then(data => {
+          if (data.message) {
+            messages.innerHTML = data.message;
+            messages.style.display = 'block';
+          } else {
+            messages.innerHTML = '';
+            messages.style.display = 'none';
+          }
+        })
+        .catch(() => {
+          messages.innerHTML = '';
+          messages.style.display = 'none';
+        });
+    }
+  }
+
+  // Clear existing event content
+  const generalEvents = document.getElementById('general-events');
+  const trainingEvents = document.getElementById('training-events');
+  if (generalEvents) {
+    generalEvents.innerHTML = '';
+    generalEvents.style.display = '';
+  }
+  if (trainingEvents) {
+    trainingEvents.innerHTML = '';
+    trainingEvents.style.display = '';
+  }
+
   // Show the loading overlay only if loading takes longer than 2 seconds
   showLoadingTimeout = setTimeout(() => {
     if (loading) {

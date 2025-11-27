@@ -62,18 +62,24 @@ container.addEventListener('touchend', (e) => {
         refreshIndicator.classList.add('refreshing');
 
         setTimeout(() => {
-            // Check if online before attempting reload
-            if (navigator.onLine) {
-                // Online - reload (service worker will handle it)
-                location.reload();
-            } else {
-                // Offline - just reset the indicator and show message
-                refreshIndicator.querySelector('span').textContent = 'No internet connection';
-                setTimeout(() => {
-                    refreshIndicator.style.display = 'none';
-                    refreshIndicator.classList.remove('ready', 'refreshing');
-                }, 1500);
+            // Get current route hash
+            const currentPage = window.location.hash.slice(1) || 'home';
+
+            if (currentPage === 'home') {
+                // Trigger home page reload event
+                const event = new CustomEvent('homePageLoaded');
+                document.dispatchEvent(event);
+            } else if (currentPage === 'search') {
+                // Trigger search page reload event
+                const event = new CustomEvent('searchPageLoaded');
+                document.dispatchEvent(event);
             }
+
+            // Reset indicator after a delay
+            setTimeout(() => {
+                refreshIndicator.style.display = 'none';
+                refreshIndicator.classList.remove('ready', 'refreshing');
+            }, 1000);
         }, 300);
     } else {
         // Reset indicator

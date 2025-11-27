@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clark-events-v2.1.3';
+const CACHE_NAME = 'clark-events-v2.1.9';
 const URLS_TO_CACHE = [
     './',
     './index.html',
@@ -47,7 +47,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event - cache first for HTML, network first for other resources
 self.addEventListener('fetch', (event) => {
     // Skip non-GET requests
     if (event.request.method !== 'GET') return;
@@ -55,42 +55,73 @@ self.addEventListener('fetch', (event) => {
     // Skip external requests
     if (!event.request.url.startsWith(self.location.origin)) return;
 
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Clone the response
-                const responseToCache = response.clone();
-
-                // Update cache with fresh content
-                caches.open(CACHE_NAME)
-                    .then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
-
-                return response;
-            })
-            .catch(() => {
-                // If network fails, try cache
-                return caches.match(event.request)
-                    .then((response) => {
-                        if (response) {
-                            return response;
-                        }
-                        // If not in cache and requesting HTML, return offline page
-                        if (event.request.headers.get('accept').includes('text/html')) {
-                            return caches.match('./offline.html');
-                        }
-                        // For non-HTML requests, return a simple message
-                        return new Response('Offline - content not available', {
-                            status: 503,
-                            statusText: 'Service Unavailable',
-                            headers: new Headers({
-                                'Content-Type': 'text/plain'
-                            })
+    // For HTML requests (navigation), use cache-first to ensure offline works
+    if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+        event.respondWith(
+            caches.open(CACHE_NAME)
+                .then((cache) => {
+                    return cache.match(event.request, { ignoreSearch: true })
+                        .then((response) => {
+                            if (response) {
+                                return response;
+                            }
+                            // Try to match index.html specifically
+                            return cache.match('./index.html')
+                                .then((indexResponse) => {
+                                    if (indexResponse) {
+                                        return indexResponse;
+                                    }
+                                    // If not in cache, try network
+                                    return fetch(event.request)
+                                        .then((networkResponse) => {
+                                            // Clone and cache the response
+                                            const responseToCache = networkResponse.clone();
+                                            cache.put(event.request, responseToCache);
+                                            return networkResponse;
+                                        })
+                                        .catch(() => {
+                                            // Network failed and not in cache, serve offline page
+                                            return cache.match('./offline.html');
+                                        });
+                                });
                         });
-                    });
-            })
-    );
+                })
+        );
+    } else {
+        // For other resources, use network-first
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    // Clone the response
+                    const responseToCache = response.clone();
+
+                    // Update cache with fresh content
+                    caches.open(CACHE_NAME)
+                        .then((cache) => {
+                            cache.put(event.request, responseToCache);
+                        });
+
+                    return response;
+                })
+                .catch(() => {
+                    // If network fails, try cache
+                    return caches.match(event.request)
+                        .then((response) => {
+                            if (response) {
+                                return response;
+                            }
+                            // For non-HTML requests, return a simple message
+                            return new Response('Offline - content not available', {
+                                status: 503,
+                                statusText: 'Service Unavailable',
+                                headers: new Headers({
+                                    'Content-Type': 'text/plain'
+                                })
+                            });
+                        });
+                })
+        );
+    }
 });
 
 // Listen for messages from the client
