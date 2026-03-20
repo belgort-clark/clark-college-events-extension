@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Clark College Events",
     "description": "A list of events taking place today and tomorrow at Clark College",
-    "version": "1.6.5",
+    "version": "1.6.6",
     "icons": {
         "32": "icon_32.png",
         "48": "icon_48.png",
@@ -13,6 +13,9 @@
         "default_icon": "icon_128.png",
         "default_popup": "popup.html"
     },
+    "host_permissions": [
+        "https://25livepub.collegenet.com/*"
+    ],
     "permissions": [],
     "browser_specific_settings": {
         "gecko": {

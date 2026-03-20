@@ -25,12 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const feeds = [
         {
-            url: 'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
+            url: 'https://25livepub.collegenet.com/calendars/clark-events.rss',
             label: 'General Event',
             baseUrl: 'https://www.clark.edu/about/calendars/events.php'
         },
         {
-            url: 'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
+            url: 'https://25livepub.collegenet.com/calendars/training-and-development.rss',
             label: 'Training Event',
             baseUrl: 'https://www.clark.edu/tlc/main-schedule.php'
         }
@@ -110,23 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Create expandable details container
         const detailsContainer = document.createElement("div");
         detailsContainer.className = "event-details";
-
-        // Insert Location before Web Area Keywords
-        // COMMENTED OUT FOR NOW
-        // let descWithLocation = event.description;
-        // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-        //     descWithLocation = descWithLocation.replace(
-        //         '<b>Web Area Keywords</b>',
-        //         `<b>Location</b>:&nbsp;${event.location} <br/><b>Web Area Keywords</b>`
-        //     );
-        // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-        //     descWithLocation = descWithLocation.replace(
-        //         '<b>Event Locator</b>',
-        //         `<b>Location</b>:&nbsp;${event.location} <br/><b>Event Locator</b>`
-        //     );
-        // } else {
-        //     descWithLocation += `<br/><b>Location</b>:&nbsp;${event.location}`;
-        // }
 
         detailsContainer.innerHTML = `
             <div class="event-details-content">

@@ -1,6 +1,3 @@
-console.log("DEBUG: popup.js loaded");
-
-
 // Show messages from GitHub
 const messages = document.querySelector("#messages");
 const messagesUrl = "https://raw.githubusercontent.com/belgort-clark/clark-college-events-messages/refs/heads/main/messages.json";
@@ -22,15 +19,8 @@ fetch(messagesUrl)
 
 // Render today's date
 function renderTodayDate() {
-  const now = new Date();
   const heading = document.querySelector('#event-date');
-  if (!heading) return; // No header element on this page
-  const dateStr = now.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  if (!heading) return;
   heading.innerHTML = 'Clark College Events';
 }
 
@@ -165,26 +155,13 @@ function parseRss(text, replacementBaseUrl) {
         !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
         oneHourAfter < nowPT;
 
-      // ============================================================================
-      // EVENT STATE DETECTION - Controls "soon" (orange pulse) and "in progress" (green pulse)
-      // ============================================================================
-      // PRODUCTION MODE (ACTIVE):
-      // - "Soon": Events within 60 min before to 30 min after start time
-      // - "In Progress": Events that started and are within 1 hour duration
+      // "Soon": within 60 min before to 30 min after start. "In Progress": started within last hour.
       const nowMs = nowPT.getTime();
       const startMs = eventDate.getTime();
       const past60 = nowMs - 60 * 60 * 1000;
       const next30 = nowMs + 30 * 60 * 1000;
       const isSoon = startMs >= past60 && startMs <= next30;
       const isInProgress = startMs <= nowMs && nowMs < startMs + 60 * 60 * 1000;
-
-      // TEST MODE (to visualize event states with more data):
-      // Uncomment the 4 lines below and comment out the 4 lines above
-      // const past60 = nowMs - 24 * 60 * 60 * 1000;
-      // const next30 = nowMs + 24 * 60 * 60 * 1000;
-      // const isSoon = startMs >= past60 && startMs <= next30;
-      // const isInProgress = startMs <= nowMs && nowMs < startMs + 24 * 60 * 60 * 1000;
-      // ============================================================================
 
       // Extract location from description (it's at the beginning before first <br/>)
       let location = "Location not specified";
@@ -446,23 +423,6 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
       const detailsContainer = document.createElement("div");
       detailsContainer.className = "event-details";
 
-      // Insert Location before Web Area Keywords
-      // COMMENTED OUT FOR NOW
-      // let descWithLocation = ev.description;
-      // if (descWithLocation.includes('<b>Web Area Keywords</b>')) {
-      //   descWithLocation = descWithLocation.replace(
-      //     '<b>Web Area Keywords</b>',
-      //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Web Area Keywords</b>`
-      //   );
-      // } else if (descWithLocation.includes('<b>Event Locator</b>')) {
-      //   descWithLocation = descWithLocation.replace(
-      //     '<b>Event Locator</b>',
-      //     `<b>Location</b>:&nbsp;${ev.location} <br/><b>Event Locator</b>`
-      //   );
-      // } else {
-      //   descWithLocation += `<br/><b>Location</b>:&nbsp;${ev.location}`;
-      // }
-
       detailsContainer.innerHTML = `
           <div class="event-details-content">
             <div><strong>${ev.title}</strong></div>
@@ -581,11 +541,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   Promise.all([
     fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/clark-events.rss',
+      'https://25livepub.collegenet.com/calendars/clark-events.rss',
       'https://www.clark.edu/about/calendars/events.php'
     ),
     fetchRssFeed(
-      'https://api.bruceelgort.com/get_data.php?feed=https://25livepub.collegenet.com/calendars/training-and-development.rss',
+      'https://25livepub.collegenet.com/calendars/training-and-development.rss',
       'https://www.clark.edu/tlc/main-schedule.php'
     )
   ])
@@ -640,7 +600,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Show footer and info message after data loads
         const footer = document.getElementById('footer');
-        if (footer) footer.style.display = 'block';
+        if (footer) {
+          footer.style.display = 'block';
+          const versionEl = document.getElementById('version-number');
+          if (versionEl) versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
+        }
         const infoMessage = document.getElementById('info-message');
         if (infoMessage) infoMessage.style.display = 'block';
         const filterSearch = document.getElementById('filter-search');
@@ -883,4 +847,40 @@ document.addEventListener('DOMContentLoaded', () => {
       filterEvents();
     }
   });
+});
+
+// ========== Hamburger Menu Toggle ==========
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.querySelector(".hamburger");
+  const navMenu = document.querySelector("nav ul");
+
+  if (hamburger && navMenu) {
+    hamburger.addEventListener("click", () => {
+      hamburger.classList.toggle("active");
+      navMenu.classList.toggle("active");
+
+      // Update aria-expanded
+      const isExpanded = hamburger.classList.contains("active");
+      hamburger.setAttribute("aria-expanded", isExpanded);
+    });
+
+    // Close menu when clicking a link
+    const navLinks = navMenu.querySelectorAll("a");
+    navLinks.forEach(link => {
+      link.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+        hamburger.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+        hamburger.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
 });
