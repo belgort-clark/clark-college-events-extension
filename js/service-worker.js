@@ -1,25 +1,25 @@
 // Clark College Events - Background Script
 
 if (typeof ServiceWorkerGlobalScope !== 'undefined') {
-    self.addEventListener('install', function () { self.skipWaiting(); });
-    self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
+    self.addEventListener('install', () => { self.skipWaiting(); });
+    self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
 }
 
-var CACHE_TTL = 5 * 60 * 1000;
-var ALLOWED_FEEDS = [
+const CACHE_TTL = 5 * 60 * 1000;
+const ALLOWED_FEEDS = [
     "https://25livepub.collegenet.com/calendars/clark-events.rss",
     "https://25livepub.collegenet.com/calendars/training-and-development.rss"
 ];
-var isFirefox = (typeof browser !== 'undefined');
+const isFirefox = (typeof browser !== 'undefined');
 console.log('[SW] Starting. Firefox:', isFirefox);
 
 // Register webRequest CORS header injection
 try {
-    var wrApi = isFirefox ? browser.webRequest : (chrome.webRequest || null);
+    const wrApi = isFirefox ? browser.webRequest : (chrome.webRequest || null);
     if (wrApi && wrApi.onHeadersReceived) {
         wrApi.onHeadersReceived.addListener(
-            function (details) {
-                var headers = details.responseHeaders.filter(function (h) {
+            (details) => {
+                const headers = details.responseHeaders.filter((h) => {
                     return h.name.toLowerCase() !== 'access-control-allow-origin';
                 });
                 headers.push({ name: 'Access-Control-Allow-Origin', value: '*' });
@@ -36,20 +36,20 @@ try {
 }
 
 // Message handler for Chrome (and Firefox if host perms are granted)
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type !== 'fetchFeed') return false;
 
-    var url = message.url;
-    if (ALLOWED_FEEDS.indexOf(url) === -1) {
+    const url = message.url;
+    if (!ALLOWED_FEEDS.includes(url)) {
         sendResponse({ error: 'URL not allowed' });
         return false;
     }
 
-    var cacheKey = 'feedcache_' + url;
-    var now = Date.now();
+    const cacheKey = 'feedcache_' + url;
+    const now = Date.now();
 
-    chrome.storage.local.get(cacheKey, function (stored) {
-        var entry = stored[cacheKey] || null;
+    chrome.storage.local.get(cacheKey, (stored) => {
+        const entry = stored[cacheKey] || null;
         if (entry && (now - entry.timestamp) < CACHE_TTL) {
             sendResponse({ text: entry.text });
             return;
@@ -57,16 +57,16 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
         console.log('[SW] Fetching:', url);
         fetch(url)
-            .then(function (r) {
+            .then((r) => {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.text();
             })
-            .then(function (text) {
+            .then((text) => {
                 console.log('[SW] Fetch OK:', text.length, 'bytes');
-                chrome.storage.local.set({ [cacheKey]: { text: text, timestamp: now } });
-                sendResponse({ text: text });
+                chrome.storage.local.set({ [cacheKey]: { text, timestamp: now } });
+                sendResponse({ text });
             })
-            .catch(function (err) {
+            .catch((err) => {
                 console.error('[SW] Fetch failed:', err.message);
                 sendResponse({ error: err.message });
             });

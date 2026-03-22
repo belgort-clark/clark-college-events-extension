@@ -4,24 +4,24 @@
 // then uses XMLHttpRequest from the popup page. If permissions can't be granted,
 // falls back to background fetch (which may work if permissions are granted later).
 
-var FEED_CACHE_TTL = 5 * 60 * 1000;
-var isFirefox = (typeof browser !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1);
+const FEED_CACHE_TTL = 5 * 60 * 1000;
+const isFirefox = (typeof browser !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1);
 
 // Check and request host permissions on Firefox.
 // Must be called from a user-gesture context (e.g., click handler).
 async function requestHostPermissions() {
     if (!isFirefox) return true;
 
-    var origins = ['https://25livepub.collegenet.com/*'];
+    const origins = ['https://25livepub.collegenet.com/*'];
     try {
         // Use the Promise-based browser.permissions API (Firefox native)
-        var has = await browser.permissions.contains({ origins: origins });
+        const has = await browser.permissions.contains({ origins: origins });
         if (has) {
             console.log('[feed] Host permissions: already granted');
             return true;
         }
         console.log('[feed] Requesting host permissions via browser.permissions.request...');
-        var granted = await browser.permissions.request({ origins: origins });
+        const granted = await browser.permissions.request({ origins: origins });
         console.log('[feed] Permission request result:', granted);
         return granted;
     } catch (e) {
@@ -31,11 +31,11 @@ async function requestHostPermissions() {
 }
 
 async function fetchFeedCached(url) {
-    var cacheKey = 'feedcache_' + url;
-    var stored = await new Promise(function (resolve) {
+    const cacheKey = 'feedcache_' + url;
+    const stored = await new Promise(function (resolve) {
         chrome.storage.local.get(cacheKey, function (r) { resolve(r[cacheKey] || null); });
     });
-    var now = Date.now();
+    const now = Date.now();
     if (stored && (now - stored.timestamp) < FEED_CACHE_TTL) return stored.text;
 
     if (isFirefox) {
@@ -44,8 +44,8 @@ async function fetchFeedCached(url) {
         // If not, it will fail with CORS error — that's handled below.
         console.log('[feed] Firefox: trying XHR for', url);
         try {
-            var text = await new Promise(function (resolve, reject) {
-                var xhr = new XMLHttpRequest();
+            const text = await new Promise(function (resolve, reject) {
+                const xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
                 xhr.onload = function () {
                     if (xhr.status >= 200 && xhr.status < 300) {
