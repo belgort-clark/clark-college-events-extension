@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Clark College Events",
     "description": "A list of events taking place today and tomorrow at Clark College",
-    "version": "1.6.6",
+    "version": "1.6.7",
     "icons": {
         "32": "icon_32.png",
         "48": "icon_48.png",
@@ -13,10 +13,20 @@
         "default_icon": "icon_128.png",
         "default_popup": "popup.html"
     },
+    "background": {
+        "service_worker": "js/service-worker.js",
+        "scripts": [
+            "js/service-worker.js"
+        ]
+    },
     "host_permissions": [
         "https://25livepub.collegenet.com/*"
     ],
-    "permissions": [],
+    "permissions": [
+        "storage",
+        "webRequest",
+        "webRequestBlocking"
+    ],
     "browser_specific_settings": {
         "gecko": {
             "id": "clark-college-events@clark.edu",

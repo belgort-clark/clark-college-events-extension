@@ -167,8 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         Promise.all(feeds.map(feed =>
-            fetch(feed.url)
-                .then(r => r.text())
+            fetchFeedCached(feed.url)
                 .then(str => {
                     const xml = new DOMParser().parseFromString(str, "text/xml");
                     return Array.from(xml.querySelectorAll("item"))

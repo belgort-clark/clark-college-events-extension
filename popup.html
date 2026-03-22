@@ -47,6 +47,18 @@
             </div>
         </div>
 
+        <div id="permission-prompt"
+            style="display:none; text-align:center; padding:30px 20px;">
+            <i class="fa-solid fa-shield-halved"
+                style="font-size:2em; color:#002855; margin-bottom:12px;"
+                aria-hidden="true"></i>
+            <p style="margin:0 0 15px 0; font-size:14px; color:#333;">This
+                extension needs permission to access Clark College event data.
+            </p>
+            <button id="grant-permission-btn"
+                style="background:#002855; color:white; border:none; padding:10px 24px; border-radius:4px; font-size:14px; cursor:pointer; font-family:'Roboto',sans-serif;">Grant
+                Permission</button>
+        </div>
         <main role="main" id="main-content"
             style="opacity:0; transition: opacity 0.4s; position:relative;">
             <div id="messages" role="alert"></div>
@@ -61,6 +73,7 @@
     <footer id="footer" style="display:none;">
         <span id="version-number"></span>
     </footer>
+    <script src="js/feed.js"></script>
     <script src="js/popup.js"></script>
 </body>
 

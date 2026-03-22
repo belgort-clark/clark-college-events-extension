@@ -52,11 +52,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
   loadingTimeout = setTimeout(() => {
     loadingMessage.classList.add('show');
   }, 2000);
-  return fetch(url)
-    .then(response => {
-      if (!response.ok) throw new Error('Network response was not ok');
-      return response.text();
-    })
+  return fetchFeedCached(url)
     .then(text => {
       clearTimeout(loadingTimeout);
       loadingMessage.classList.remove('show');
@@ -70,7 +66,7 @@ function fetchRssFeed(url, replacementBaseUrl) {
       const messages = document.getElementById('messages');
       if (messages) {
         messages.style.display = 'block';
-        messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Unable to load events. Please check your internet connection or try again later.';
+        messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>' + error.message;
         messages.setAttribute('data-timeout-error', 'true');
       }
       // Hide main content sections when there's an error
@@ -505,112 +501,168 @@ setInterval(() => {
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
-  const loadingMessages = document.querySelectorAll("#loading-message");
-  const loading = loadingMessages[loadingMessages.length - 1];
-  let showLoadingTimeout = null;
-  let globalTimeout = null;
-  const messages = document.getElementById('messages');
 
-  // Show the loading overlay only if loading takes longer than 2 seconds
-  showLoadingTimeout = setTimeout(() => {
-    if (loading) {
-      loading.classList.add('show');
-    }
-  }, 2000);
+  // --- Firefox permission check ---
+  var permPrompt = document.getElementById('permission-prompt');
+  var grantBtn = document.getElementById('grant-permission-btn');
+  var isFirefox = (typeof browser !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1);
 
-  // Global timeout for all feeds (e.g., 10 seconds)
-  globalTimeout = setTimeout(() => {
-    if (loading) {
-      loading.classList.remove('show');
-      loading.style.display = 'none';
-      loading.setAttribute('aria-hidden', 'true');
-    }
-    if (messages) {
-      messages.style.display = 'block';
-      messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Unable to load events. Please check your internet connection or try again later.';
-      messages.setAttribute('data-timeout-error', 'true');
-    }
-    // Hide main content sections when there's an error
-    const generalEvents = document.getElementById('general-events');
-    const trainingEvents = document.getElementById('training-events');
-    if (generalEvents) generalEvents.style.display = 'none';
-    if (trainingEvents) trainingEvents.style.display = 'none';
-    const main = document.getElementById('main-content');
-    if (main) main.style.opacity = 1;
-  }, 10000);
+  function loadEvents() {
+    const loadingMessages = document.querySelectorAll("#loading-message");
+    const loading = loadingMessages[loadingMessages.length - 1];
+    let showLoadingTimeout = null;
+    let globalTimeout = null;
+    const messages = document.getElementById('messages');
 
-  Promise.all([
-    fetchRssFeed(
-      'https://25livepub.collegenet.com/calendars/clark-events.rss',
-      'https://www.clark.edu/about/calendars/events.php'
-    ),
-    fetchRssFeed(
-      'https://25livepub.collegenet.com/calendars/training-and-development.rss',
-      'https://www.clark.edu/tlc/main-schedule.php'
-    )
-  ])
-    .then(([gen, train]) => {
-      if (globalTimeout) {
-        clearTimeout(globalTimeout);
-        globalTimeout = null;
+    // Show the loading overlay only if loading takes longer than 2 seconds
+    showLoadingTimeout = setTimeout(() => {
+      if (loading) {
+        loading.classList.add('show');
       }
+    }, 2000);
 
-      // Check if there's already an error displayed
-      const messages = document.getElementById('messages');
-      if (messages && messages.getAttribute('data-timeout-error') === 'true') {
-        // Don't render sections if there's an error
-        return;
+    // Global timeout for all feeds (e.g., 10 seconds)
+    globalTimeout = setTimeout(() => {
+      if (loading) {
+        loading.classList.remove('show');
+        loading.style.display = 'none';
+        loading.setAttribute('aria-hidden', 'true');
       }
+      if (messages) {
+        messages.style.display = 'block';
+        messages.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Unable to load events. Please check your internet connection or try again later.';
+        messages.setAttribute('data-timeout-error', 'true');
+      }
+      // Hide main content sections when there's an error
+      const generalEvents = document.getElementById('general-events');
+      const trainingEvents = document.getElementById('training-events');
+      if (generalEvents) generalEvents.style.display = 'none';
+      if (trainingEvents) trainingEvents.style.display = 'none';
+      const main = document.getElementById('main-content');
+      if (main) main.style.opacity = 1;
+    }, 10000);
 
-      renderEventSection(
-        "general-events",
-        "Events at Clark College",
-        "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
-        gen,
-        "https://www.clark.edu/about/calendars/events.php",
-        true
-      );
-      renderEventSection(
-        "training-events",
-        "Employee Training and Development Events",
-        "These events are part of Clark College's Employee Training and Development programs happening today, tomorrow, and beyond.",
-        train,
-        "https://www.clark.edu/tlc/main-schedule.php",
-        true
-      );
-    })
-    .finally(() => {
-      if (showLoadingTimeout) {
-        clearTimeout(showLoadingTimeout);
-        showLoadingTimeout = null;
-      }
-      if (globalTimeout) {
-        clearTimeout(globalTimeout);
-        globalTimeout = null;
-      }
-      // Only hide overlay and show content if a timeout error is not already shown
-      if (messages && messages.getAttribute('data-timeout-error') === 'true') {
-        // Do nothing, error already shown
-      } else {
-        if (loading) {
-          loading.classList.remove('show');
+    Promise.all([
+      fetchRssFeed(
+        'https://25livepub.collegenet.com/calendars/clark-events.rss',
+        'https://www.clark.edu/about/calendars/events.php'
+      ),
+      fetchRssFeed(
+        'https://25livepub.collegenet.com/calendars/training-and-development.rss',
+        'https://www.clark.edu/tlc/main-schedule.php'
+      )
+    ])
+      .then(([gen, train]) => {
+        if (globalTimeout) {
+          clearTimeout(globalTimeout);
+          globalTimeout = null;
         }
-        const main = document.getElementById('main-content');
-        if (main) main.style.opacity = 1;
 
-        // Show footer and info message after data loads
-        const footer = document.getElementById('footer');
-        if (footer) {
-          footer.style.display = 'block';
-          const versionEl = document.getElementById('version-number');
-          if (versionEl) versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
+        // Check if there's already an error displayed
+        const messages = document.getElementById('messages');
+        if (messages && messages.getAttribute('data-timeout-error') === 'true') {
+          // Don't render sections if there's an error
+          return;
         }
-        const infoMessage = document.getElementById('info-message');
-        if (infoMessage) infoMessage.style.display = 'block';
-        const filterSearch = document.getElementById('filter-search');
-        if (filterSearch) filterSearch.style.display = 'block';
-      }
-    });
+
+        renderEventSection(
+          "general-events",
+          "Events at Clark College",
+          "Displaying college community events, important dates, enrollment deadlines, and student activities happening today, tomorrow, and beyond.",
+          gen,
+          "https://www.clark.edu/about/calendars/events.php",
+          true
+        );
+        renderEventSection(
+          "training-events",
+          "Employee Training and Development Events",
+          "These events are part of Clark College's Employee Training and Development programs happening today, tomorrow, and beyond.",
+          train,
+          "https://www.clark.edu/tlc/main-schedule.php",
+          true
+        );
+      })
+      .finally(() => {
+        if (showLoadingTimeout) {
+          clearTimeout(showLoadingTimeout);
+          showLoadingTimeout = null;
+        }
+        if (globalTimeout) {
+          clearTimeout(globalTimeout);
+          globalTimeout = null;
+        }
+        // Only hide overlay and show content if a timeout error is not already shown
+        if (messages && messages.getAttribute('data-timeout-error') === 'true') {
+          // Do nothing, error already shown
+        } else {
+          if (loading) {
+            loading.classList.remove('show');
+          }
+          const main = document.getElementById('main-content');
+          if (main) main.style.opacity = 1;
+
+          // Show footer and info message after data loads
+          const footer = document.getElementById('footer');
+          if (footer) {
+            footer.style.display = 'block';
+            const versionEl = document.getElementById('version-number');
+            if (versionEl) versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
+          }
+          const infoMessage = document.getElementById('info-message');
+          if (infoMessage) infoMessage.style.display = 'block';
+          const filterSearch = document.getElementById('filter-search');
+          if (filterSearch) filterSearch.style.display = 'block';
+        }
+      });
+  } // end loadEvents()
+
+  // Firefox: check if we need to request host permissions
+  if (isFirefox && permPrompt && grantBtn) {
+    browser.permissions.contains({ origins: ['https://25livepub.collegenet.com/*'] })
+      .then(function (hasPerms) {
+        if (hasPerms) {
+          console.log('[popup] Firefox: host permissions granted, loading events');
+          permPrompt.style.display = 'none';
+          loadEvents();
+        } else {
+          console.log('[popup] Firefox: need permission grant');
+          permPrompt.style.display = 'block';
+          grantBtn.addEventListener('click', function () {
+            grantBtn.disabled = true;
+            grantBtn.textContent = 'Granting...';
+            browser.permissions.request({ origins: ['https://25livepub.collegenet.com/*'] })
+              .then(function (granted) {
+                console.log('[popup] Permission granted:', granted);
+                if (granted) {
+                  permPrompt.style.display = 'none';
+                  loadEvents();
+                } else {
+                  grantBtn.disabled = false;
+                  grantBtn.textContent = 'Grant Permission';
+                  var msg = document.getElementById('messages');
+                  if (msg) {
+                    msg.style.display = 'block';
+                    msg.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;" aria-hidden="true"></i>Permission denied. Click the button to try again.';
+                  }
+                }
+              })
+              .catch(function (err) {
+                console.error('[popup] Permission request error:', err);
+                grantBtn.disabled = false;
+                grantBtn.textContent = 'Grant Permission';
+              });
+          });
+        }
+      })
+      .catch(function (err) {
+        console.error('[popup] permissions.contains error:', err);
+        // Fall through and try loading anyway
+        loadEvents();
+      });
+  } else {
+    // Chrome or no permission prompt element — load directly
+    loadEvents();
+  }
 });
 
 // ========== Filter Functionality ==========

@@ -235,6 +235,8 @@ footer a:focus {
 }
 
 #version-number {
+    display: block;
+    text-align: center;
     color: var(--text-light);
     font-size: 12px;
     opacity: 0.6;
