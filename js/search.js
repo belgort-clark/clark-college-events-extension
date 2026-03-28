@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // info button
         const infoButton = document.createElement("button");
         infoButton.className = "info-icon";
-        infoButton.setAttribute("aria-label", "More information about this event");
+        infoButton.setAttribute("aria-label", `Show details for ${event.title}`);
         infoButton.setAttribute("aria-expanded", "false");
         infoButton.innerHTML = `<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>`;
 
@@ -259,6 +259,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             resultsContainer.style.display = "block";
+
+            // Announce results to screen readers
+            const searchStatus = document.getElementById('search-status');
+            if (searchStatus) {
+                searchStatus.textContent = flat.length === 0
+                    ? 'No events found'
+                    : `${flat.length} event${flat.length !== 1 ? 's' : ''} found`;
+            }
         }).catch(err => console.error("Search error:", err));
     }
 

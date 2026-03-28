@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700"
         rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,14 +17,17 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="container">
         <h1 class="visually-hidden">Clark College Events</h1>
         <div class="sticky-nav-wrapper">
-            <nav>
+            <nav aria-label="Main navigation">
                 <ul>
-                    <li><a href="popup.html" id="active-page">Home</a></li>
+                    <li><a href="popup.html" id="active-page"
+                            aria-current="page">Home</a></li>
                     <li><a href="search.html">Search Events</a></li>
                     <li><a href="about.html">About</a></li>
+                    <li><a href="changelog.html">Change Log</a></li>
                 </ul>
             </nav>
 
@@ -59,11 +62,13 @@
                 style="background:#002855; color:white; border:none; padding:10px 24px; border-radius:4px; font-size:14px; cursor:pointer; font-family:'Roboto',sans-serif;">Grant
                 Permission</button>
         </div>
-        <main role="main" id="main-content"
+        <main id="main-content"
             style="opacity:0; transition: opacity 0.4s; position:relative;">
             <div id="messages" role="alert"></div>
             <div id="general-events"></div>
             <div id="training-events"></div>
+            <div id="filter-status" class="visually-hidden" role="status"
+                aria-live="polite" aria-atomic="true"></div>
         </main>
         <div id="loading-message" role="status" aria-live="polite">
             <span class="loading-spinner" aria-hidden="true"></span>

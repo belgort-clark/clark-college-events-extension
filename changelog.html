@@ -16,20 +16,51 @@
 </head>
 
 <body class="changelog-page">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="container">
         <h1 class="visually-hidden">Change Log</h1>
         <div class="sticky-nav-wrapper">
-            <nav>
+            <nav aria-label="Main navigation">
                 <ul>
                     <li><a href="popup.html">Home</a></li>
                     <li><a href="search.html">Search Events</a></li>
                     <li><a href="about.html">About</a></li>
+                    <li><a href="changelog.html" id="active-page"
+                            aria-current="page">Change Log</a></li>
                 </ul>
             </nav>
         </div>
 
-        <main>
+        <main id="main-content">
             <details open>
+                <summary>Version 1.6.8</summary>
+                <ul class="changelog">
+                    <li><strong>Better accessibility font:</strong> Switched to
+                        Atkinson Hyperlegible — a font designed for low-vision
+                        readability with clearer letter shapes</li>
+                    <li><strong>Skip navigation:</strong> Keyboard users can now
+                        press Tab to skip past the menu and jump straight to
+                        page content</li>
+                    <li><strong>Smoother screen reader experience:</strong>
+                        Filter and search results are now announced
+                        automatically so screen reader users know how many
+                        events matched</li>
+                    <li><strong>Clearer expand buttons:</strong> The detail
+                        buttons now include the event name for screen readers
+                        instead of a generic label</li>
+                    <li><strong>Respects motion preferences:</strong> Pulsing
+                        event indicators are replaced with static highlights for
+                        users who prefer reduced motion</li>
+                    <li><strong>Improved focus indicators:</strong> Input fields
+                        now show a visible outline when focused via keyboard
+                    </li>
+                    <li><strong>Larger tap targets:</strong> Expand and clear
+                        buttons now meet minimum size guidelines for easier
+                        tapping</li>
+                </ul>
+            </details>
+
+            <details>
                 <summary>Version 1.6.7</summary>
                 <ul class="changelog">
                     <li><strong>Firefox support:</strong> The extension now

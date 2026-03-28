@@ -15,7 +15,7 @@
     --spacing-small: 6px;
     --spacing-medium: 12px;
     --spacing-large: 20px;
-    --font-family: Arial, sans-serif;
+    --font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
     --box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
     --transition-speed: 0.2s;
 }
@@ -35,6 +35,27 @@ html {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border-width: 0;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    z-index: 200;
+    padding: 8px 16px;
+    background: var(--primary-blue);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 0 0 var(--border-radius-small) var(--border-radius-small);
+    text-decoration: none;
+    transition: top 0.2s;
+}
+
+.skip-link:focus {
+    top: 0;
+    color: #fff;
+    outline: 2px solid var(--accent-teal);
+    outline-offset: 2px;
 }
 
 /* ========== Loading Animations ========== */
@@ -237,9 +258,8 @@ footer a:focus {
 #version-number {
     display: block;
     text-align: center;
-    color: var(--text-light);
+    color: #595959;
     font-size: 12px;
-    opacity: 0.6;
 }
 
 /* ========== Modal Styles ========== */
@@ -522,6 +542,12 @@ a.event-past {
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     transition: color 0.2s ease;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .info-icon i {
@@ -685,8 +711,9 @@ main>p {
 
 #search:focus,
 #filter-input:focus {
-    outline: none;
-    border: 2px solid #535486;
+    outline: 2px solid #535486;
+    outline-offset: 1px;
+    border: 1px solid #535486;
 }
 
 #clear-search,
@@ -700,7 +727,12 @@ main>p {
     font-size: 20px;
     color: #555;
     cursor: pointer;
-    padding: 0;
+    padding: 4px;
+    min-width: 24px;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
     transition: color 0.2s ease;
 }
@@ -977,5 +1009,33 @@ nav ul li a:focus {
 
     100% {
         box-shadow: 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* ========== Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+
+    .upcoming-soon,
+    .event-in-progress {
+        animation: none;
+    }
+
+    .upcoming-soon {
+        border-left: 4px solid rgba(255, 162, 0, 0.8);
+    }
+
+    .event-in-progress {
+        border-left: 4px solid rgba(40, 167, 69, 0.8);
+    }
+
+    .loading-spinner {
+        animation: none;
+        border-top-color: var(--secondary-purple);
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
     }
 }

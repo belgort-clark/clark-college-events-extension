@@ -246,7 +246,7 @@ function renderUpcomingEventsList(ul, events, parentElement) {
 
       const btn = document.createElement("button");
       btn.className = "info-icon";
-      btn.setAttribute("aria-label", "More information");
+      btn.setAttribute("aria-label", `Show details for ${ev.title}`);
       btn.setAttribute("aria-expanded", "false");
       btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
 
@@ -411,7 +411,7 @@ function renderEventSection(containerId, sectionTitle, descriptionText, data, se
 
       const btn = document.createElement("button");
       btn.className = "info-icon";
-      btn.setAttribute("aria-label", "More information");
+      btn.setAttribute("aria-label", `Show details for ${ev.title}`);
       btn.setAttribute("aria-expanded", "false");
       btn.innerHTML = '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
 
@@ -866,6 +866,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update section header visibility
     updateSectionVisibility();
+
+    // Announce filter results to screen readers
+    const filterStatus = document.getElementById('filter-status');
+    if (filterStatus) {
+      const visibleCount = allEventItems.filter(item =>
+        !item.classList.contains('date-header') && item.style.display !== 'none'
+      ).length;
+      if (searchTerm.length > 0) {
+        filterStatus.textContent = `${visibleCount} event${visibleCount !== 1 ? 's' : ''} found`;
+      } else {
+        filterStatus.textContent = '';
+      }
+    }
   }
 
   // Collect items when sections are populated
