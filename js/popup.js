@@ -606,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (footer) {
             footer.style.display = 'block';
             const versionEl = document.getElementById('version-number');
-            if (versionEl) versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
+            if (versionEl) versionEl.textContent = `Version ${chrome.runtime.getManifest().version}`;
           }
           const infoMessage = document.getElementById('info-message');
           if (infoMessage) infoMessage.style.display = 'block';
