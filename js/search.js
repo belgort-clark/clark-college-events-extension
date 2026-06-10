@@ -37,18 +37,41 @@ document.addEventListener("DOMContentLoaded", () => {
     ];
 
     // Mirror popup.js helper
-    function getPacificNow() {
-        const fmt = new Intl.DateTimeFormat("en-US", {
+    function getPacificToLocalOffset() {
+        // Get current time in Pacific timezone
+        const pacificFormatter = new Intl.DateTimeFormat("en-US", {
             timeZone: "America/Los_Angeles",
             hour12: false,
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
         });
-        return new Date(fmt.format(new Date()));
+
+        // Get current time in local timezone
+        const localFormatter = new Intl.DateTimeFormat("en-US", {
+            hour12: false,
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        });
+
+        const pacificDateStr = pacificFormatter.format(new Date());
+        const localDateStr = localFormatter.format(new Date());
+
+        const pacificDate = new Date(pacificDateStr);
+        const localDate = new Date(localDateStr);
+
+        // Return offset in milliseconds
+        return localDate.getTime() - pacificDate.getTime();
+    }
+
+    // Convert Pacific time event to local time
+    function convertPacificToLocal(pacificDate) {
+        const offset = getPacificToLocalOffset();
+        return new Date(pacificDate.getTime() + offset);
+    }
+
+    // Get current local time (for comparisons)
+    function getNow() {
+        return new Date();
     }
 
     function formatDateString(date) {
@@ -66,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Build a single <li> + expandable details for each result
     function createEventListItem(event) {
-        const nowPt = getPacificNow().getTime();
+        const nowLocal = getNow().getTime();
         const evTs = event.date.getTime();
 
         const li = document.createElement("li");
@@ -74,12 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Apply state classes for pulsating effects (matching popup.js logic)
         // "Soon": Events within 60 min before to 30 min after start time (orange pulse)
-        const past60 = nowPt - 60 * 60 * 1000;
-        const next30 = nowPt + 30 * 60 * 1000;
+        const past60 = nowLocal - 60 * 60 * 1000;
+        const next30 = nowLocal + 30 * 60 * 1000;
         const isSoon = evTs >= past60 && evTs <= next30;
 
         // "In Progress": Events that started and are within 1 hour duration (green pulse)
-        const isInProgress = evTs <= nowPt && nowPt < evTs + 60 * 60 * 1000;
+        const isInProgress = evTs <= nowLocal && nowLocal < evTs + 60 * 60 * 1000;
 
         if (isSoon) {
             li.classList.add("upcoming-soon");
@@ -202,7 +225,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
 
                             const link = item.querySelector("link")?.textContent || "";
-                            const date = new Date(item.querySelector("pubDate")?.textContent || "");
+                            const dateRaw = new Date(item.querySelector("pubDate")?.textContent || "");
+                            // Convert Pacific time to local time
+                            const date = convertPacificToLocal(dateRaw);
                             let newLink = link;
                             try {
                                 newLink = feed.baseUrl + new URL(link).search;

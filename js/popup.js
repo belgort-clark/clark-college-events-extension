@@ -24,15 +24,42 @@ function renderTodayDate() {
   heading.innerHTML = 'Clark College Events';
 }
 
-// Get Pacific‐time “now”
-function getPacificNow() {
-  const formatter = new Intl.DateTimeFormat("en-US", {
+// Calculate offset between Pacific Time and local time
+function getPacificToLocalOffset() {
+  // Get current time in Pacific timezone
+  const pacificFormatter = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
     hour12: false,
     year: "numeric", month: "2-digit", day: "2-digit",
     hour: "2-digit", minute: "2-digit", second: "2-digit"
   });
-  return new Date(formatter.format(new Date()));
+
+  // Get current time in local timezone
+  const localFormatter = new Intl.DateTimeFormat("en-US", {
+    hour12: false,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit"
+  });
+
+  const pacificDateStr = pacificFormatter.format(new Date());
+  const localDateStr = localFormatter.format(new Date());
+
+  const pacificDate = new Date(pacificDateStr);
+  const localDate = new Date(localDateStr);
+
+  // Return offset in milliseconds
+  return localDate.getTime() - pacificDate.getTime();
+}
+
+// Convert Pacific time event to local time
+function convertPacificToLocal(pacificDate) {
+  const offset = getPacificToLocalOffset();
+  return new Date(pacificDate.getTime() + offset);
+}
+
+// Get current local time (for comparisons)
+function getNow() {
+  return new Date();
 }
 
 // Format H:MM or "All Day"
@@ -85,8 +112,8 @@ function parseRss(text, replacementBaseUrl) {
   const xmlDoc = parser.parseFromString(text, "text/xml");
   const items = xmlDoc.querySelectorAll("item");
 
-  const nowPT = getPacificNow();
-  const today = new Date(nowPT.getFullYear(), nowPT.getMonth(), nowPT.getDate());
+  const nowLocal = getNow();
+  const today = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate());
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const normTom = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
@@ -109,7 +136,9 @@ function parseRss(text, replacementBaseUrl) {
     .forEach(item => {
       const title = item.querySelector("title")?.textContent || "";
       const pubDateStr = item.querySelector("pubDate")?.textContent || "";
-      const eventDate = new Date(pubDateStr);
+      const eventDatePacific = new Date(pubDateStr);
+      // Convert Pacific time to local time
+      const eventDate = convertPacificToLocal(eventDatePacific);
       const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
 
       // build link
@@ -149,10 +178,10 @@ function parseRss(text, replacementBaseUrl) {
       const oneHourAfter = new Date(eventDate.getTime() + 60 * 60 * 1000);
       const isPast =
         !(eventDate.getHours() === 0 && eventDate.getMinutes() === 0) &&
-        oneHourAfter < nowPT;
+        oneHourAfter < nowLocal;
 
       // "Soon": within 60 min before to 30 min after start. "In Progress": started within last hour.
-      const nowMs = nowPT.getTime();
+      const nowMs = nowLocal.getTime();
       const startMs = eventDate.getTime();
       const past60 = nowMs - 60 * 60 * 1000;
       const next30 = nowMs + 30 * 60 * 1000;
