@@ -196,6 +196,12 @@ h3 {
     padding-right: 20px;
 }
 
+details>p {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 12px;
+}
+
 .version {
     color: #444;
     margin: 40px 0;
@@ -696,6 +702,8 @@ main>p {
     color: var(--text-medium);
     font-size: 1em;
     margin-bottom: 15px;
+    padding-left: var(--spacing-large);
+    padding-top: var(--spacing-medium);
 }
 
 .filter-input-wrapper {
