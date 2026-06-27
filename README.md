@@ -139,4 +139,4 @@ Developed by students in Clark College's [Web Development Program](https://www.c
 
 ## Version
 
-Current version: **1.7.2**
+Current version: **1.7.3**
