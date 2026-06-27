@@ -4,13 +4,10 @@
     "description": "A list of events taking place today and tomorrow at Clark College",
     "version": "1.7.3",
     "icons": {
-        "32": "icon_32.png",
-        "48": "icon_48.png",
-        "64": "icon_64.png",
-        "128": "icon_128.png"
+        "128": "images/logo.png"
     },
     "action": {
-        "default_icon": "icon_128.png",
+        "default_icon": "images/logo.png",
         "default_popup": "popup.html"
     },
     "background": {
